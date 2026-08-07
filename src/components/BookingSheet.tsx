@@ -119,34 +119,36 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
 
   const stepIndex = steps.indexOf(step);
 
-  const dateError = showErrors && step === "date" ? validateDate(date) : null;
+  const dateError =
+    showErrors && step === "date" ? validateDate(date, tour?.demoDates) : null;
   const nameError =
     showErrors && step === "details" ? validateName(name) : null;
   const emailError =
     showErrors && step === "details" ? validateEmail(email) : null;
 
   const canContinue = useMemo(() => {
-    if (step === "date") return !validateDate(date);
+    if (step === "date") return !validateDate(date, tour?.demoDates);
     if (step === "details") {
       return !validateName(name) && !validateEmail(email);
     }
     return true;
-  }, [step, date, name, email]);
+  }, [step, date, name, email, tour?.demoDates]);
 
   const continueHint = useMemo(() => {
     if (canContinue || step === "confirmed" || step === "payment") return null;
-    if (step === "date") return validateDate(date);
+    if (step === "date") return validateDate(date, tour?.demoDates);
     if (step === "details") {
       return validateName(name) ?? validateEmail(email);
     }
     return null;
-  }, [canContinue, step, date, name, email]);
+  }, [canContinue, step, date, name, email, tour?.demoDates]);
 
   if (!open || !tour) return null;
 
   function next() {
+    if (!tour) return;
     if (step === "date") {
-      if (validateDate(date)) {
+      if (validateDate(date, tour.demoDates)) {
         setShowErrors(true);
         return;
       }
@@ -279,7 +281,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                 <select
                   id="passengers"
                   value={passengers}
-                  onChange={(e) => setPassengers(Number(e.target.value))}
+                  onChange={(e) => setPassengers(Math.min(6, Math.max(1, Number(e.target.value))))}
                   className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
                 >
                   {[1, 2, 3, 4, 5, 6].map((n) => (
