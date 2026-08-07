@@ -1,5 +1,10 @@
-import { LandingPage } from "@/components/LandingPage";
+import { BookingProvider } from "@/components/booking/BookingProvider";
+import { LandingContent } from "@/components/LandingContent";
 
 export default function Home() {
-  return <LandingPage />;
+  return (
+    <BookingProvider>
+      <LandingContent />
+    </BookingProvider>
+  );
 }

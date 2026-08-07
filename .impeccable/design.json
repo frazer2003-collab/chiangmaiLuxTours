@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-07T11:30:00.000Z",
+  "title": "Design System: Mekong Transfer",
+  "extensions": {
+    "colorMeta": {
+      "chart-paper": {
+        "role": "neutral",
+        "displayName": "Chart Paper",
+        "canonical": "#f7f5f0"
+      },
+      "river-blue": {
+        "role": "primary",
+        "displayName": "River Blue",
+        "canonical": "#2563a8"
+      },
+      "river-navy": {
+        "role": "neutral",
+        "displayName": "River Navy",
+        "canonical": "#0f2740"
+      },
+      "marker-yellow": {
+        "role": "accent",
+        "displayName": "Marker Yellow",
+        "canonical": "#f2c94c"
+      }
+    },
+    "motion": {
+      "scroll": "smooth when prefers-reduced-motion: no-preference",
+      "button-hover": "brightness-95 on yellow CTAs",
+      "modal-overlay": "backdrop-blur 2px on booking overlay"
+    },
+    "breakpoints": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px"
+    },
+    "focusRing": {
+      "width": "2px",
+      "offset": "2px",
+      "colors": ["var(--marker-yellow)", "var(--river-blue)", "white on navy hero"]
+    },
+    "northStar": "The River Chart",
+    "rules": [
+      "Honest Placeholder Rule",
+      "Licence Stripe Rule"
+    ]
+  }
+}

@@ -24,7 +24,7 @@ The site replaces scattered PDF/poster materials as the canonical place to brows
 
 ## Positioning
 
-Licensed Mekong slow-boat operator offering the classic river corridor (Huay Xai ↔ Luang Prabang) plus Thailand–Laos connection packages from established meeting hubs — bookable directly on the web rather than only via chat or partner desks.
+Licensed Mekong operator offering routes from Chiang Mai, Chiang Rai, Chiang Khong, and Huay Xai to Luang Prabang — bookable directly on the web rather than only via chat or partner desks.
 
 ## Operating Context
 
@@ -37,11 +37,11 @@ Licensed Mekong slow-boat operator offering the classic river corridor (Huay Xai
 ### Confirmed for v1
 
 - Single-page landing: hero, four tour cards, expandable/detail sections per tour, how-it-works, meeting points, FAQ, footer.
-- Four tour products (working names):
-  1. Slow Boat: Huay Xai → Luang Prabang
-  2. Slow Boat: Luang Prabang → Huay Xai
-  3. Thailand ↔ Laos Connection (Chiang Mai / Chiang Rai / Chiang Khong hubs)
-  4. Private Charter / Custom Day
+- Four tour products:
+  1. Chiang Mai → Luang Prabang (2 days · 1 night)
+  2. Chiang Rai → Luang Prabang (1 day trip)
+  3. Chiang Khong → Luang Prabang (1 day trip)
+  4. Huay Xai → Luang Prabang (1 day trip)
 - Mobile-first layout; desktop adapts from the same structure.
 - English only at launch.
 - Checkout UX: select tour → date → passengers + email → payment step → confirmation state.

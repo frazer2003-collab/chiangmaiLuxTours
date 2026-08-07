@@ -17,7 +17,7 @@ const ui = Libre_Franklin({
 export const metadata: Metadata = {
   title: "Mekong Transfer | Book Mekong Slow Boat Tours",
   description:
-    "Licensed Mekong slow boat tours on the Huay Xai ↔ Luang Prabang corridor. Browse routes and book online.",
+    "Licensed Mekong tours from Chiang Mai, Chiang Rai, Chiang Khong, and Huay Xai to Luang Prabang. Browse routes and book online.",
 };
 
 export default function RootLayout({
@@ -28,6 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${chart.variable} ${ui.variable} h-full`}>
       <body className="min-h-full antialiased">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-[var(--marker-yellow)] focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
+        >
+          Skip to main content
+        </a>
         {/*
           THESIS: Mekong journeys read as navigable river charts—waypoints, not generic tour cards.
           OWN-WORLD: cream chart paper, blue hydrography, yellow fix markers, serif route labels.

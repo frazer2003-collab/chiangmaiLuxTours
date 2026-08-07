@@ -1,25 +1,43 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { IconClose } from "./icons";
 import { getTour } from "@/lib/tours";
+import {
+  validateDate,
+  validateEmail,
+  validateName,
+} from "@/lib/booking-validation";
 import type { BookingStep } from "@/lib/types";
 
 type Props = {
   open: boolean;
   tourId: string | null;
   onClose: () => void;
+  returnFocusRef?: React.RefObject<HTMLElement | null>;
 };
 
 const steps: BookingStep[] = ["tour", "date", "details", "payment", "confirmed"];
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function BookingSheet({ open, tourId, onClose }: Props) {
+export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const tour = tourId ? getTour(tourId) : undefined;
   const [step, setStep] = useState<BookingStep>("tour");
   const [date, setDate] = useState("");
   const [passengers, setPassengers] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [showErrors, setShowErrors] = useState(false);
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
+
+  const dateErrorId = useId();
+  const nameErrorId = useId();
+  const emailErrorId = useId();
+  const continueHintId = useId();
 
   useEffect(() => {
     if (open && tourId) {
@@ -28,6 +46,7 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
       setPassengers(1);
       setName("");
       setEmail("");
+      setShowErrors(false);
     }
   }, [open, tourId]);
 
@@ -40,23 +59,115 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
     };
   }, [open]);
 
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    previouslyFocused.current =
+      returnFocusRef?.current ?? (document.activeElement as HTMLElement | null);
+
+    const focusTimer = window.setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 0);
+
+    function getFocusableElements() {
+      if (!dialogRef.current) return [] as HTMLElement[];
+      return Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((el) => el.offsetParent !== null || el === document.activeElement);
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        handleClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      const focusable = getFocusableElements();
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey) {
+        if (active === first || !dialogRef.current.contains(active)) {
+          event.preventDefault();
+          last.focus();
+        }
+      } else if (active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", handleKeyDown);
+      const target = returnFocusRef?.current ?? previouslyFocused.current;
+      target?.focus?.();
+    };
+  }, [open, handleClose, returnFocusRef]);
+
   const stepIndex = steps.indexOf(step);
 
+  const dateError = showErrors && step === "date" ? validateDate(date) : null;
+  const nameError =
+    showErrors && step === "details" ? validateName(name) : null;
+  const emailError =
+    showErrors && step === "details" ? validateEmail(email) : null;
+
   const canContinue = useMemo(() => {
-    if (step === "date") return Boolean(date);
-    if (step === "details") return name.trim().length > 1 && email.includes("@");
+    if (step === "date") return !validateDate(date);
+    if (step === "details") {
+      return !validateName(name) && !validateEmail(email);
+    }
     return true;
   }, [step, date, name, email]);
+
+  const continueHint = useMemo(() => {
+    if (canContinue || step === "confirmed" || step === "payment") return null;
+    if (step === "date") return validateDate(date);
+    if (step === "details") {
+      return validateName(name) ?? validateEmail(email);
+    }
+    return null;
+  }, [canContinue, step, date, name, email]);
 
   if (!open || !tour) return null;
 
   function next() {
-    if (step === "date") setStep("details");
-    else if (step === "details") setStep("payment");
-    else if (step === "payment") setStep("confirmed");
+    if (step === "date") {
+      if (validateDate(date)) {
+        setShowErrors(true);
+        return;
+      }
+      setShowErrors(false);
+      setStep("details");
+      return;
+    }
+    if (step === "details") {
+      if (validateName(name) || validateEmail(email)) {
+        setShowErrors(true);
+        return;
+      }
+      setShowErrors(false);
+      setStep("payment");
+      return;
+    }
+    if (step === "payment") setStep("confirmed");
   }
 
   function back() {
+    setShowErrors(false);
     if (step === "details") setStep("date");
     else if (step === "payment") setStep("details");
   }
@@ -66,28 +177,34 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
       <button
         type="button"
         aria-label="Close booking"
-        className="absolute inset-0 bg-[#0f2740]/55 backdrop-blur-[2px]"
-        onClick={onClose}
+        className="absolute inset-0 bg-[var(--river-navy)]/55 backdrop-blur-[2px]"
+        onClick={handleClose}
       />
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="booking-title"
         className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[1.25rem] bg-[var(--chart-paper)] shadow-[0_24px_60px_-12px_rgba(15,39,64,0.35)] sm:rounded-[1.25rem]"
       >
         <div className="flex items-start justify-between gap-4 border-b border-[var(--river-blue)]/15 px-5 py-4">
-          <div>
+          <div className="min-w-0">
             <p className="font-[family-name:var(--font-chart)] text-xs uppercase tracking-[0.18em] text-[var(--river-blue)]">
               Chart booking · Step {Math.min(stepIndex + 1, 4)} of 4
             </p>
-            <h2 id="booking-title" className="mt-1 text-lg font-semibold text-[var(--ink)]">
+            <h2
+              id="booking-title"
+              className="mt-1 text-lg font-semibold text-[var(--ink)]"
+            >
               {tour.name}
             </h2>
           </div>
           <button
+            ref={closeButtonRef}
             type="button"
-            onClick={onClose}
-            className="rounded-full p-2 text-[var(--ink-muted)] transition hover:bg-[var(--river-blue)]/8 hover:text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+            onClick={handleClose}
+            aria-label="Close booking"
+            className="rounded-full p-2.5 text-[var(--ink-muted)] transition hover:bg-[var(--river-blue)]/8 hover:text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
           >
             <IconClose className="h-5 w-5" />
           </button>
@@ -103,7 +220,12 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
                 <legend className="mb-2 text-sm font-medium text-[var(--ink)]">
                   Departure date
                 </legend>
-                <div className="grid gap-2">
+                <div
+                  className="grid gap-2"
+                  role="radiogroup"
+                  aria-invalid={dateError ? true : undefined}
+                  aria-describedby={dateError ? dateErrorId : undefined}
+                >
                   {tour.demoDates.map((d) => (
                     <label
                       key={d}
@@ -126,12 +248,24 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
                         name="date"
                         value={d}
                         checked={date === d}
-                        onChange={() => setDate(d)}
+                        onChange={() => {
+                          setDate(d);
+                          setShowErrors(false);
+                        }}
                         className="sr-only"
                       />
                     </label>
                   ))}
                 </div>
+                {dateError && (
+                  <p
+                    id={dateErrorId}
+                    role="alert"
+                    className="mt-2 text-sm text-[var(--river-blue-deep)]"
+                  >
+                    {dateError}
+                  </p>
+                )}
               </fieldset>
             </div>
           )}
@@ -146,7 +280,7 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
                   id="passengers"
                   value={passengers}
                   onChange={(e) => setPassengers(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+                  className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
                 >
                   {[1, 2, 3, 4, 5, 6].map((n) => (
                     <option key={n} value={n}>
@@ -163,10 +297,21 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
                   id="name"
                   type="text"
                   autoComplete="name"
+                  maxLength={100}
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (showErrors) setShowErrors(false);
+                  }}
+                  aria-invalid={nameError ? true : undefined}
+                  aria-describedby={nameError ? nameErrorId : undefined}
+                  className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
                 />
+                {nameError && (
+                  <p id={nameErrorId} role="alert" className="mt-1.5 text-sm text-[var(--river-blue-deep)]">
+                    {nameError}
+                  </p>
+                )}
               </div>
               <div>
                 <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
@@ -176,10 +321,21 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
                   id="email"
                   type="email"
                   autoComplete="email"
+                  inputMode="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (showErrors) setShowErrors(false);
+                  }}
+                  aria-invalid={emailError ? true : undefined}
+                  aria-describedby={emailError ? emailErrorId : undefined}
+                  className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
                 />
+                {emailError && (
+                  <p id={emailErrorId} role="alert" className="mt-1.5 text-sm text-[var(--river-blue-deep)]">
+                    {emailError}
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -190,7 +346,7 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
                 <p className="text-sm font-medium text-[var(--ink)]">Payment placeholder</p>
                 <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
                   No charge is processed in this version. When payment goes live, full amount will
-                  be collected here. {tour.priceNote}
+                  be collected here. Listed price: {tour.price}
                 </p>
               </div>
               <dl className="space-y-2 rounded-xl bg-[var(--river-blue)]/6 p-4 text-sm">
@@ -219,41 +375,49 @@ export function BookingSheet({ open, tourId, onClose }: Props) {
               </div>
               <h3 className="text-xl font-semibold text-[var(--ink)]">Booking recorded</h3>
               <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                Placeholder confirmation — email to <strong className="text-[var(--ink)]">{email}</strong>{" "}
-                will be sent when transactional email is connected.
+                Placeholder confirmation — email to{" "}
+                <strong className="text-[var(--ink)]">{email}</strong> will be sent when
+                transactional email is connected.
               </p>
             </div>
           )}
         </div>
 
-        <div className="flex gap-3 border-t border-[var(--river-blue)]/15 px-5 py-4">
-          {step !== "confirmed" && step !== "date" && (
-            <button
-              type="button"
-              onClick={back}
-              className="rounded-full px-4 py-2.5 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
-            >
-              Back
-            </button>
+        <div className="flex flex-col gap-2 border-t border-[var(--river-blue)]/15 px-5 py-4">
+          {continueHint && (
+            <p id={continueHintId} className="text-sm text-[var(--ink-muted)]">
+              {continueHint}
+            </p>
           )}
-          {step === "confirmed" ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="ml-auto flex-1 rounded-full bg-[var(--river-blue)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
-            >
-              Done
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled={!canContinue}
-              onClick={next}
-              className="ml-auto flex-1 rounded-full bg-[var(--marker-yellow)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition enabled:hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
-            >
-              {step === "payment" ? "Complete booking (demo)" : "Continue"}
-            </button>
-          )}
+          <div className="flex gap-3">
+            {step !== "confirmed" && step !== "date" && (
+              <button
+                type="button"
+                onClick={back}
+                className="min-h-11 rounded-full px-4 py-2.5 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+              >
+                Back
+              </button>
+            )}
+            {step === "confirmed" ? (
+              <button
+                type="button"
+                onClick={handleClose}
+                className="ml-auto min-h-11 flex-1 rounded-full bg-[var(--river-blue)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+              >
+                Done
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={next}
+                aria-describedby={continueHint ? continueHintId : undefined}
+                className="ml-auto min-h-11 flex-1 rounded-full bg-[var(--marker-yellow)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
+              >
+                {step === "payment" ? "Complete booking (demo)" : "Continue"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,23 +1,20 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { BookingSheet } from "./BookingSheet";
-import { IconBoat, IconChevron, IconMapPin, IconShield } from "./icons";
-import { tours } from "@/lib/tours";
+import { BookTourButton } from "@/components/booking/BookTourButton";
+import { IconChevron, IconMapPin, IconShield } from "@/components/icons";
+import { CONTACT, tours } from "@/lib/tours";
+import { SHARED_TOUR_INTRO } from "@/lib/types";
 
-const hubs = [
-  { name: "Chiang Mai", note: "Transfer hub" },
-  { name: "Chiang Rai", note: "Transfer hub" },
-  { name: "Chiang Khong", note: "Thai border pier" },
-  { name: "Huay Xai Village", note: "Laos departure" },
-];
+const hubs = tours.map((tour) => ({
+  name: tour.from === "Huay Xai" ? "Huay Xai Village" : tour.from,
+  note: tour.meetingPoint,
+  price: tour.price,
+}));
 
 const faqs = [
   {
-    q: "What should I bring on the slow boat?",
-    a: "Light luggage, sun protection, cash for Pak Beng overnight, and your passport for border checks.",
+    q: "What should I bring on the river journey?",
+    a: "Light luggage, sun protection, passport for border checks, and cash for stops en route. The Chiang Mai route includes one overnight.",
   },
   {
     q: "Are dates flexible?",
@@ -29,24 +26,16 @@ const faqs = [
   },
   {
     q: "Where do I meet the boat?",
-    a: "Each tour lists its meeting point. Connection packages include ground transfer from your chosen hub.",
+    a: "Each tour lists its departure hub — Chiang Mai, Chiang Rai, Chiang Khong, or Huay Xai Village. All routes finish in Luang Prabang.",
   },
 ];
 
-export function LandingPage() {
-  const [bookingTourId, setBookingTourId] = useState<string | null>(null);
-  const [bookingOpen, setBookingOpen] = useState(false);
-
-  function openBooking(tourId: string) {
-    setBookingTourId(tourId);
-    setBookingOpen(true);
-  }
-
+export function LandingContent() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--river-blue)]/12 bg-[var(--chart-paper)]/92 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link href="#" className="flex items-center gap-3">
+          <Link href="/" className="flex min-h-11 items-center gap-3">
             <Image
               src="/logo.jpeg"
               alt="Mekong Transfer"
@@ -61,13 +50,14 @@ export function LandingPage() {
           </Link>
           <a
             href="#tours"
-            className="rounded-full bg-[var(--marker-yellow)] px-4 py-2 text-sm font-semibold text-[var(--ink)] shadow-[0_8px_20px_-8px_rgba(242,201,76,0.8)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
+            className="inline-flex min-h-11 items-center rounded-full bg-[var(--marker-yellow)] px-5 py-3 text-sm font-semibold text-[var(--ink)] shadow-[0_8px_20px_-8px_rgba(242,201,76,0.8)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
           >
             Book a tour
           </a>
         </div>
       </header>
 
+      <main id="main">
       <section className="relative overflow-hidden bg-[var(--river-navy)] text-white">
         <div className="chart-grid absolute inset-0 opacity-[0.08]" aria-hidden />
         <svg
@@ -84,16 +74,15 @@ export function LandingPage() {
         <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-14">
           <div className="max-w-2xl">
             <h1 className="font-[family-name:var(--font-chart)] text-[clamp(2rem,6vw,3.25rem)] leading-[1.05] tracking-[-0.03em] text-balance">
-              Book your Mekong slow boat journey
+              Cruise the Mighty Mekong
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-white/82 sm:text-lg">
-              Licensed river passages on the Huay Xai ↔ Luang Prabang corridor. Read the route,
-              pick your leg, and reserve online.
+              {SHARED_TOUR_INTRO}
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
                 href="#tours"
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--marker-yellow)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--marker-yellow)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 Choose a route
                 <IconChevron className="h-4 w-4" />
@@ -115,7 +104,7 @@ export function LandingPage() {
               River routes
             </h2>
             <p className="mt-3 text-base leading-relaxed text-[var(--ink-muted)]">
-              Four passages on the chart — tap a waypoint to read the leg and book.
+              Four departures on the chart — one route to Luang Prabang from each hub.
             </p>
           </div>
 
@@ -140,7 +129,7 @@ export function LandingPage() {
                 className="w-[min(85vw,320px)] shrink-0 snap-start md:w-auto"
               >
                 <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--river-blue)]/18 bg-white shadow-[0_14px_40px_-22px_rgba(27,61,92,0.45)]">
-                  <div className="relative aspect-[4/3] bg-[linear-gradient(145deg,#2a6dad_0%,#1a4a75_55%,#0f2740_100%)]">
+                  <div className="relative aspect-[4/3] bg-[linear-gradient(145deg,var(--river-blue)_0%,var(--river-blue-deep)_55%,var(--river-navy)_100%)]">
                     <div className="absolute inset-0 flex items-end p-4">
                       <span className="rounded-md bg-black/35 px-2 py-1 text-[11px] font-medium uppercase tracking-wider text-white/90">
                         Photo placeholder
@@ -151,18 +140,21 @@ export function LandingPage() {
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col p-4 sm:p-5">
-                    <h3 className="text-lg font-semibold leading-snug text-[var(--ink)]">{tour.name}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">{tour.tagline}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--river-blue)]">
+                      Premium · Special · Slow boat
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold leading-snug text-[var(--ink)]">{tour.name}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-[var(--ink-muted)]">{tour.tagline}</p>
                     <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-[var(--river-blue)]">
                       {tour.duration}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => openBooking(tour.id)}
-                      className="mt-5 w-full rounded-full bg-[var(--river-blue)] py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--river-blue-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+                    <p className="mt-2 text-base font-semibold text-[var(--ink)]">{tour.price}</p>
+                    <BookTourButton
+                      tourId={tour.id}
+                      className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[var(--river-blue)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--river-blue-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
                     >
                       Book this route
-                    </button>
+                    </BookTourButton>
                   </div>
                 </div>
               </article>
@@ -180,21 +172,48 @@ export function LandingPage() {
           <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
             <div>
               <p className="font-[family-name:var(--font-chart)] text-sm uppercase tracking-[0.16em] text-[var(--river-blue)]">
-                Waypoint {tour.chartPosition}
+                {tour.posterTitle}
               </p>
               <h2 id={`detail-${tour.id}-title`} className="mt-2 text-2xl font-semibold tracking-tight text-[var(--ink)] sm:text-3xl">
-                {tour.name}
+                {tour.headline}
               </h2>
-              <p className="mt-3 text-base leading-relaxed text-[var(--ink-muted)]">{tour.tagline}</p>
+              <p className="mt-1 text-lg text-[var(--ink-muted)]">{tour.tagline}</p>
+              <p className="mt-4 text-base leading-relaxed text-[var(--ink-muted)]">{tour.intro}</p>
 
-              <ul className="mt-6 space-y-2">
-                {tour.highlights.map((item) => (
-                  <li key={item} className="flex gap-2 text-sm text-[var(--ink)]">
-                    <IconBoat className="mt-0.5 h-4 w-4 shrink-0 text-[var(--river-blue)]" />
-                    {item}
-                  </li>
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {tour.experiences.map((item) => (
+                  <div
+                    key={item.title}
+                    className="rounded-xl border border-[var(--river-blue)]/12 bg-[var(--chart-paper)] p-4"
+                  >
+                    <h3 className="text-sm font-semibold text-[var(--ink)]">{item.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-[var(--ink-muted)]">{item.description}</p>
+                  </div>
                 ))}
-              </ul>
+              </div>
+
+              <dl className="mt-8 space-y-4 rounded-2xl border border-[var(--river-blue)]/12 bg-[var(--chart-paper)] p-5">
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--river-blue)]">Route</dt>
+                  <dd className="mt-1 text-sm font-medium text-[var(--ink)]">{tour.routeDetail}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--river-blue)]">Perfect for</dt>
+                  <dd className="mt-1 text-sm text-[var(--ink-muted)]">{tour.perfectFor}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--river-blue)]">Duration</dt>
+                  <dd className="mt-1 text-sm text-[var(--ink-muted)]">
+                    {tour.duration} · {tour.durationDetail}
+                  </dd>
+                </div>
+              </dl>
+
+              {tour.overnightNote && (
+                <p className="mt-4 rounded-xl border border-[var(--marker-yellow)]/40 bg-[var(--marker-yellow)]/10 px-4 py-3 text-sm leading-relaxed text-[var(--ink)]">
+                  {tour.overnightNote}
+                </p>
+              )}
 
               <div className="mt-8">
                 <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--ink)]">
@@ -214,39 +233,47 @@ export function LandingPage() {
             </div>
 
             <aside className="rounded-2xl border border-[var(--river-blue)]/15 bg-[var(--chart-paper)] p-5 sm:p-6">
-              <div className="aspect-[16/10] rounded-xl bg-[linear-gradient(160deg,#dbeafe_0%,#93c5fd_40%,#2563a8_100%)]">
-                <div className="flex h-full items-end p-3">
-                  <span className="rounded bg-white/80 px-2 py-1 text-[11px] font-medium text-[var(--ink-muted)]">
-                    Tour photo placeholder
+              <div className="aspect-[16/10] rounded-xl bg-[linear-gradient(160deg,color-mix(in_srgb,var(--chart-paper)_80%,white)_0%,color-mix(in_srgb,var(--river-blue)_35%,white)_40%,var(--river-blue)_100%)]">
+                <div className="flex h-full flex-col items-start justify-between p-4">
+                  <span className="rounded-md bg-[var(--marker-yellow)] px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--ink)]">
+                    Special · Slow boat
                   </span>
+                  <div>
+                    <p className="text-2xl font-semibold text-white">{tour.price}</p>
+                    <p className="mt-1 text-xs uppercase tracking-wider text-white/85">{tour.duration}</p>
+                  </div>
                 </div>
               </div>
               <dl className="mt-5 space-y-3 text-sm">
                 <div>
                   <dt className="text-[var(--ink-muted)]">Route</dt>
-                  <dd className="font-medium text-[var(--ink)]">{tour.route}</dd>
+                  <dd className="font-medium text-[var(--ink)]">{tour.routeDetail}</dd>
                 </div>
                 <div>
                   <dt className="text-[var(--ink-muted)]">Meeting point</dt>
                   <dd className="font-medium text-[var(--ink)]">{tour.meetingPoint}</dd>
                 </div>
-                <div>
-                  <dt className="text-[var(--ink-muted)]">Pricing</dt>
-                  <dd className="font-medium text-[var(--ink)]">{tour.priceNote}</dd>
-                </div>
               </dl>
-              <ul className="mt-4 space-y-1.5 text-sm text-[var(--ink-muted)]">
+              <h3 className="mt-5 text-sm font-semibold text-[var(--ink)]">Included</h3>
+              <ul className="mt-2 space-y-1.5 text-sm text-[var(--ink-muted)]">
                 {tour.includes.map((item) => (
-                  <li key={item}>· {item}</li>
+                  <li key={item} className="flex gap-2">
+                    <span className="text-[var(--marker-yellow)]" aria-hidden>
+                      ◆
+                    </span>
+                    {item}
+                  </li>
                 ))}
               </ul>
-              <button
-                type="button"
-                onClick={() => openBooking(tour.id)}
-                className="mt-6 w-full rounded-full bg-[var(--marker-yellow)] py-3 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
+              <p className="mt-5 text-sm leading-relaxed text-[var(--ink-muted)]">
+                We look forward to welcoming you aboard for an unforgettable journey on the Mekong River!
+              </p>
+              <BookTourButton
+                tourId={tour.id}
+                className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[var(--marker-yellow)] px-4 py-3 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
               >
                 Book this tour
-              </button>
+              </BookTourButton>
             </aside>
           </div>
         </section>
@@ -259,7 +286,7 @@ export function LandingPage() {
           </h2>
           <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              ["Select route", "Pick one of four river passages on the chart."],
+              ["Select route", "Pick your hub — Chiang Mai, Chiang Rai, Chiang Khong, or Huay Xai."],
               ["Choose date", "Demo dates shown until admin calendar is live."],
               ["Enter details", "Passengers and email for your confirmation."],
               ["Pay online", "Placeholder checkout — no charge in v1."],
@@ -279,7 +306,7 @@ export function LandingPage() {
             Meeting points
           </h2>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--ink-muted)]">
-            Hubs from our existing schedule materials — transfers connect you to the river.
+            Departure hubs for each route — all journeys finish in Luang Prabang.
           </p>
           <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {hubs.map((hub) => (
@@ -291,6 +318,7 @@ export function LandingPage() {
                 <div>
                   <p className="font-semibold text-[var(--ink)]">{hub.name}</p>
                   <p className="text-sm text-[var(--ink-muted)]">{hub.note}</p>
+                  <p className="mt-1 text-sm font-medium text-[var(--river-blue)]">{hub.price}</p>
                 </div>
               </li>
             ))}
@@ -309,7 +337,7 @@ export function LandingPage() {
                 key={item.q}
                 className="group rounded-2xl border border-[var(--river-blue)]/15 bg-white px-5 py-4"
               >
-                <summary className="cursor-pointer list-none font-medium text-[var(--ink)] marker:content-none [&::-webkit-details-marker]:hidden">
+                <summary className="cursor-pointer list-none rounded-lg py-1 font-medium text-[var(--ink)] marker:content-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] [&::-webkit-details-marker]:hidden">
                   {item.q}
                 </summary>
                 <p className="mt-3 text-sm leading-relaxed text-[var(--ink-muted)]">{item.a}</p>
@@ -318,26 +346,43 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+      </main>
 
       <footer className="bg-[var(--river-navy)] py-10 text-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
           <div>
             <p className="text-lg font-semibold">Mekong Transfer</p>
             <p className="mt-1 text-sm text-white/75">The Best Travel Agency</p>
-            <p className="mt-3 text-sm text-white/70">TAT Licence ID 21/01279</p>
+            <p className="mt-3 text-sm text-white/70">TAT Licence ID {CONTACT.licence}</p>
           </div>
-          <p className="max-w-sm text-sm leading-relaxed text-white/65">
-            Placeholder contact — connect phone, LINE, and email when ready. Booking checkout is
-            demo-only until payment goes live.
+          <div>
+            <p className="text-sm font-semibold text-white/90">Mobile &amp; WhatsApp</p>
+            <ul className="mt-2 space-y-1 text-sm text-white/75">
+              {CONTACT.phones.map((phone) => (
+                <li key={phone}>
+                  <a
+                    href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+                    className="hover:text-[var(--marker-yellow)]"
+                  >
+                    {phone}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 text-sm font-semibold text-white/90">Email</p>
+            <a
+              href={`mailto:${CONTACT.email}`}
+              className="mt-1 block text-sm text-white/75 hover:text-[var(--marker-yellow)]"
+            >
+              {CONTACT.email}
+            </a>
+          </div>
+          <p className="text-sm leading-relaxed text-white/65 sm:col-span-2 lg:col-span-1">
+            Experience the Real Laos — premium slow boat routes from Chiang Mai, Chiang Rai,
+            Chiang Khong, and Huay Xai to Luang Prabang.
           </p>
         </div>
       </footer>
-
-      <BookingSheet
-        open={bookingOpen}
-        tourId={bookingTourId}
-        onClose={() => setBookingOpen(false)}
-      />
     </>
   );
 }
