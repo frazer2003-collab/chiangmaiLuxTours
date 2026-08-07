@@ -1,0 +1,1807 @@
+﻿{
+  "detector_cli": {},
+  "pdfs": {
+    "Mekong ALISDA Schedule.pdf": {
+      "current": {
+        "path": "Mekong ALISDA Schedule.pdf",
+        "phone_spans": [
+          {
+            "text": "\u00a0 062-996-9434",
+            "font": "Type3 (270 0 R)",
+            "size_pt": 7.488,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              735.59,
+              218.32,
+              791.19,
+              225.81
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+",
+            "font": "Type3 (381 0 R)",
+            "size_pt": 7.294,
+            "color_rgb": [
+              74,
+              70,
+              54
+            ],
+            "bbox_pt": [
+              703.95,
+              546.96,
+              708.26,
+              554.25
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 95 102 9528 \u00a0\u2022\u00a0",
+            "font": "Type3 (376 0 R)",
+            "size_pt": 7.294,
+            "color_rgb": [
+              74,
+              70,
+              54
+            ],
+            "bbox_pt": [
+              708.29,
+              545.43,
+              770.47,
+              552.72
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+66 62 996 9434",
+            "font": "Helvetica",
+            "size_pt": 7.29,
+            "color_rgb": [
+              74,
+              70,
+              54
+            ],
+            "bbox_pt": [
+              772.48,
+              544.08,
+              827.48,
+              554.1
+            ],
+            "is_helvetica": true,
+            "is_type3": false
+          }
+        ],
+        "phone_format_reconstructed": "+66 62 996 9434 | +66 95 102 9528 \u00a0\u2022",
+        "logo_images": [
+          {
+            "xref": 31,
+            "width_px": 1342,
+            "height_px": 1229,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                664.84,
+                91.1,
+                781.48,
+                198.38
+              ]
+            ],
+            "width_pt_per_instance": [
+              116.64
+            ],
+            "height_pt_per_instance": [
+              107.28
+            ]
+          },
+          {
+            "xref": 36,
+            "width_px": 2048,
+            "height_px": 2048,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                633.16,
+                520.94,
+                682.12,
+                569.9
+              ],
+              [
+                53.56,
+                59.42,
+                157.24,
+                162.38
+              ]
+            ],
+            "width_pt_per_instance": [
+              48.96,
+              103.68
+            ],
+            "height_pt_per_instance": [
+              48.96,
+              102.96
+            ]
+          },
+          {
+            "xref": 37,
+            "width_px": 1109,
+            "height_px": 1475,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                31.11,
+                223.72,
+                179.68,
+                421.45
+              ]
+            ],
+            "width_pt_per_instance": [
+              148.57
+            ],
+            "height_pt_per_instance": [
+              197.73
+            ]
+          }
+        ]
+      },
+      "original": {
+        "path": "editable/originals/Mekong ALISDA Schedule.pdf",
+        "phone_spans": [
+          {
+            "text": "\u00a0 062-996-9434",
+            "font": "Type3 (371 0 R)",
+            "size_pt": 7.488,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              735.59,
+              218.32,
+              791.19,
+              225.81
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+",
+            "font": "Type3 (616 0 R)",
+            "size_pt": 7.294,
+            "color_rgb": [
+              74,
+              70,
+              54
+            ],
+            "bbox_pt": [
+              703.95,
+              546.96,
+              708.26,
+              554.25
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 95 102 9528 \u00a0\u2022\u00a0 ",
+            "font": "Type3 (600 0 R)",
+            "size_pt": 7.294,
+            "color_rgb": [
+              74,
+              70,
+              54
+            ],
+            "bbox_pt": [
+              708.29,
+              545.43,
+              772.48,
+              552.72
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+",
+            "font": "Type3 (616 0 R)",
+            "size_pt": 7.294,
+            "color_rgb": [
+              74,
+              70,
+              54
+            ],
+            "bbox_pt": [
+              772.48,
+              546.96,
+              776.78,
+              554.25
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 61 442",
+            "font": "Type3 (600 0 R)",
+            "size_pt": 7.294,
+            "color_rgb": [
+              74,
+              70,
+              54
+            ],
+            "bbox_pt": [
+              776.82,
+              545.43,
+              811.48,
+              552.72
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "5645",
+            "font": "Type3 (600 0 R)",
+            "size_pt": 7.294,
+            "color_rgb": [
+              74,
+              70,
+              54
+            ],
+            "bbox_pt": [
+              691.86,
+              554.79,
+              709.9,
+              562.08
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          }
+        ],
+        "phone_format_reconstructed": "+66 95 102 9528 \u00a0\u2022\u00a0 +66 61 442",
+        "logo_images": [
+          {
+            "xref": 43,
+            "width_px": 1342,
+            "height_px": 1229,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                664.84,
+                91.1,
+                781.48,
+                198.38
+              ]
+            ],
+            "width_pt_per_instance": [
+              116.64
+            ],
+            "height_pt_per_instance": [
+              107.28
+            ]
+          },
+          {
+            "xref": 54,
+            "width_px": 1333,
+            "height_px": 1329,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                633.16,
+                520.94,
+                682.12,
+                569.9
+              ],
+              [
+                53.56,
+                59.42,
+                157.24,
+                162.38
+              ]
+            ],
+            "width_pt_per_instance": [
+              48.96,
+              103.68
+            ],
+            "height_pt_per_instance": [
+              48.96,
+              102.96
+            ]
+          },
+          {
+            "xref": 56,
+            "width_px": 1109,
+            "height_px": 1475,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                31.11,
+                223.72,
+                179.68,
+                421.45
+              ]
+            ],
+            "width_pt_per_instance": [
+              148.57
+            ],
+            "height_pt_per_instance": [
+              197.73
+            ]
+          }
+        ]
+      }
+    },
+    "Mekong Poster ChiangKhong.pdf": {
+      "current": {
+        "path": "Mekong Poster ChiangKhong.pdf",
+        "phone_spans": [
+          {
+            "text": "+",
+            "font": "Type3 (70 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              424.22,
+              584.74,
+              434.22
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 95 102 9528",
+            "font": "Type3 (71 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              424.07,
+              672.06,
+              434.07
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+66 (0) 62 996 9434",
+            "font": "Helvetica",
+            "size_pt": 10.0,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              438.41,
+              669.31,
+              452.15
+            ],
+            "is_helvetica": true,
+            "is_type3": false
+          }
+        ],
+        "phone_format_reconstructed": "+66 (0) 95 102 9528 | +66 (0) 62 996 9434",
+        "logo_images": [
+          {
+            "xref": 5,
+            "width_px": 1108,
+            "height_px": 1477,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                -75.07,
+                -0.08,
+                372.07,
+                595.65
+              ]
+            ],
+            "width_pt_per_instance": [
+              447.14
+            ],
+            "height_pt_per_instance": [
+              595.73
+            ]
+          },
+          {
+            "xref": 55,
+            "width_px": 2048,
+            "height_px": 2048,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                388.5,
+                394.5,
+                468.0,
+                474.0
+              ],
+              [
+                114.0,
+                11.25,
+                182.25,
+                79.5
+              ]
+            ],
+            "width_pt_per_instance": [
+              79.5,
+              68.25
+            ],
+            "height_pt_per_instance": [
+              79.5,
+              68.25
+            ]
+          }
+        ]
+      },
+      "original": {
+        "path": "editable/originals/Mekong Poster ChiangKhong.pdf",
+        "phone_spans": [
+          {
+            "text": "+",
+            "font": "Type3 (77 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              424.22,
+              584.74,
+              434.22
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 95 102 9528",
+            "font": "Type3 (78 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              424.07,
+              672.06,
+              434.07
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+",
+            "font": "Type3 (77 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              437.72,
+              584.74,
+              447.72
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 61 442 5645",
+            "font": "Type3 (78 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              437.57,
+              673.22,
+              447.57
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          }
+        ],
+        "phone_format_reconstructed": "+66 (0) 95 102 9528 | +66 (0) 61 442 5645",
+        "logo_images": [
+          {
+            "xref": 5,
+            "width_px": 1108,
+            "height_px": 1477,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                -75.07,
+                -0.08,
+                372.07,
+                595.65
+              ]
+            ],
+            "width_pt_per_instance": [
+              447.14
+            ],
+            "height_pt_per_instance": [
+              595.73
+            ]
+          },
+          {
+            "xref": 61,
+            "width_px": 1346,
+            "height_px": 1346,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                388.5,
+                394.5,
+                468.0,
+                474.0
+              ],
+              [
+                114.0,
+                11.25,
+                182.25,
+                79.5
+              ]
+            ],
+            "width_pt_per_instance": [
+              79.5,
+              68.25
+            ],
+            "height_pt_per_instance": [
+              79.5,
+              68.25
+            ]
+          }
+        ]
+      }
+    },
+    "Mekong Poster ChiangMai.pdf": {
+      "current": {
+        "path": "Mekong Poster ChiangMai.pdf",
+        "phone_spans": [
+          {
+            "text": "+",
+            "font": "Type3 (79 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              424.22,
+              584.74,
+              434.22
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 95 102 9528",
+            "font": "Type3 (80 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              424.07,
+              672.06,
+              434.07
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+66 (0) 62 996 9434",
+            "font": "Helvetica",
+            "size_pt": 10.0,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              438.41,
+              669.31,
+              452.15
+            ],
+            "is_helvetica": true,
+            "is_type3": false
+          }
+        ],
+        "phone_format_reconstructed": "+66 (0) 95 102 9528 | +66 (0) 62 996 9434",
+        "logo_images": [
+          {
+            "xref": 5,
+            "width_px": 1108,
+            "height_px": 1477,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                -75.07,
+                -0.08,
+                372.07,
+                595.65
+              ]
+            ],
+            "width_pt_per_instance": [
+              447.14
+            ],
+            "height_pt_per_instance": [
+              595.73
+            ]
+          },
+          {
+            "xref": 64,
+            "width_px": 2048,
+            "height_px": 2048,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                388.5,
+                394.5,
+                468.0,
+                474.0
+              ],
+              [
+                114.0,
+                11.25,
+                182.25,
+                79.5
+              ]
+            ],
+            "width_pt_per_instance": [
+              79.5,
+              68.25
+            ],
+            "height_pt_per_instance": [
+              79.5,
+              68.25
+            ]
+          }
+        ]
+      },
+      "original": {
+        "path": "editable/originals/Mekong Poster ChiangMai.pdf",
+        "phone_spans": [
+          {
+            "text": "+",
+            "font": "Type3 (87 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              424.22,
+              584.74,
+              434.22
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 95 102 9528",
+            "font": "Type3 (88 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              424.07,
+              672.06,
+              434.07
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+",
+            "font": "Type3 (87 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              437.72,
+              584.74,
+              447.72
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 61 442 5645",
+            "font": "Type3 (88 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              437.57,
+              673.22,
+              447.57
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          }
+        ],
+        "phone_format_reconstructed": "+66 (0) 95 102 9528 | +66 (0) 61 442 5645",
+        "logo_images": [
+          {
+            "xref": 5,
+            "width_px": 1108,
+            "height_px": 1477,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                -75.07,
+                -0.08,
+                372.07,
+                595.65
+              ]
+            ],
+            "width_pt_per_instance": [
+              447.14
+            ],
+            "height_pt_per_instance": [
+              595.73
+            ]
+          },
+          {
+            "xref": 71,
+            "width_px": 1346,
+            "height_px": 1346,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                388.5,
+                394.5,
+                468.0,
+                474.0
+              ],
+              [
+                114.0,
+                11.25,
+                182.25,
+                79.5
+              ]
+            ],
+            "width_pt_per_instance": [
+              79.5,
+              68.25
+            ],
+            "height_pt_per_instance": [
+              79.5,
+              68.25
+            ]
+          }
+        ]
+      }
+    },
+    "Mekong Poster ChiangRai.pdf": {
+      "current": {
+        "path": "Mekong Poster ChiangRai.pdf",
+        "phone_spans": [
+          {
+            "text": "+",
+            "font": "Type3 (70 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              424.22,
+              584.74,
+              434.22
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 95 102 9528",
+            "font": "Type3 (71 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              424.07,
+              672.06,
+              434.07
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+66 (0) 62 996 9434",
+            "font": "Helvetica",
+            "size_pt": 10.0,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              438.41,
+              669.31,
+              452.15
+            ],
+            "is_helvetica": true,
+            "is_type3": false
+          }
+        ],
+        "phone_format_reconstructed": "+66 (0) 95 102 9528 | +66 (0) 62 996 9434",
+        "logo_images": [
+          {
+            "xref": 5,
+            "width_px": 1108,
+            "height_px": 1477,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                -75.07,
+                -0.08,
+                372.07,
+                595.65
+              ]
+            ],
+            "width_pt_per_instance": [
+              447.14
+            ],
+            "height_pt_per_instance": [
+              595.73
+            ]
+          },
+          {
+            "xref": 55,
+            "width_px": 2048,
+            "height_px": 2048,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                388.5,
+                394.5,
+                468.0,
+                474.0
+              ],
+              [
+                114.0,
+                11.25,
+                182.25,
+                79.5
+              ]
+            ],
+            "width_pt_per_instance": [
+              79.5,
+              68.25
+            ],
+            "height_pt_per_instance": [
+              79.5,
+              68.25
+            ]
+          }
+        ]
+      },
+      "original": {
+        "path": "editable/originals/Mekong Poster ChiangRai.pdf",
+        "phone_spans": [
+          {
+            "text": "+",
+            "font": "Type3 (77 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              424.22,
+              584.74,
+              434.22
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 95 102 9528",
+            "font": "Type3 (78 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              424.07,
+              672.06,
+              434.07
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+",
+            "font": "Type3 (77 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              437.72,
+              584.74,
+              447.72
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 61 442 5645",
+            "font": "Type3 (78 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              437.57,
+              673.22,
+              447.57
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          }
+        ],
+        "phone_format_reconstructed": "+66 (0) 95 102 9528 | +66 (0) 61 442 5645",
+        "logo_images": [
+          {
+            "xref": 5,
+            "width_px": 1108,
+            "height_px": 1477,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                -75.07,
+                -0.08,
+                372.07,
+                595.65
+              ]
+            ],
+            "width_pt_per_instance": [
+              447.14
+            ],
+            "height_pt_per_instance": [
+              595.73
+            ]
+          },
+          {
+            "xref": 61,
+            "width_px": 1346,
+            "height_px": 1346,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                388.5,
+                394.5,
+                468.0,
+                474.0
+              ],
+              [
+                114.0,
+                11.25,
+                182.25,
+                79.5
+              ]
+            ],
+            "width_pt_per_instance": [
+              79.5,
+              68.25
+            ],
+            "height_pt_per_instance": [
+              79.5,
+              68.25
+            ]
+          }
+        ]
+      }
+    },
+    "Mekong Poster HuayXai.pdf": {
+      "current": {
+        "path": "Mekong Poster HuayXai.pdf",
+        "phone_spans": [
+          {
+            "text": "+",
+            "font": "Type3 (70 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              416.72,
+              584.74,
+              426.72
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 95 102 9528",
+            "font": "Type3 (71 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              416.57,
+              672.06,
+              426.57
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+66 (0) 62 996 9434",
+            "font": "Helvetica",
+            "size_pt": 10.0,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              431.66,
+              669.31,
+              445.4
+            ],
+            "is_helvetica": true,
+            "is_type3": false
+          }
+        ],
+        "phone_format_reconstructed": "+66 (0) 95 102 9528 | +66 (0) 62 996 9434",
+        "logo_images": [
+          {
+            "xref": 5,
+            "width_px": 1108,
+            "height_px": 1477,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                -75.07,
+                -0.08,
+                372.07,
+                595.65
+              ]
+            ],
+            "width_pt_per_instance": [
+              447.14
+            ],
+            "height_pt_per_instance": [
+              595.73
+            ]
+          },
+          {
+            "xref": 55,
+            "width_px": 2048,
+            "height_px": 2048,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                388.5,
+                394.5,
+                468.0,
+                474.0
+              ],
+              [
+                114.0,
+                11.25,
+                182.25,
+                79.5
+              ]
+            ],
+            "width_pt_per_instance": [
+              79.5,
+              68.25
+            ],
+            "height_pt_per_instance": [
+              79.5,
+              68.25
+            ]
+          }
+        ]
+      },
+      "original": {
+        "path": "editable/originals/Mekong Poster HuayXai.pdf",
+        "phone_spans": [
+          {
+            "text": "+",
+            "font": "Type3 (77 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              416.72,
+              584.74,
+              426.72
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 95 102 9528",
+            "font": "Type3 (78 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              416.57,
+              672.06,
+              426.57
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "+",
+            "font": "Type3 (77 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              578.99,
+              430.97,
+              584.74,
+              440.97
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          },
+          {
+            "text": "66 (0) 61 442 5645",
+            "font": "Type3 (78 0 R)",
+            "size_pt": 9.997,
+            "color_rgb": [
+              234,
+              241,
+              250
+            ],
+            "bbox_pt": [
+              584.81,
+              430.82,
+              673.22,
+              440.82
+            ],
+            "is_helvetica": false,
+            "is_type3": true
+          }
+        ],
+        "phone_format_reconstructed": "+66 (0) 95 102 9528 | +66 (0) 61 442 5645",
+        "logo_images": [
+          {
+            "xref": 5,
+            "width_px": 1108,
+            "height_px": 1477,
+            "instance_count": 1,
+            "positions_pt": [
+              [
+                -75.07,
+                -0.08,
+                372.07,
+                595.65
+              ]
+            ],
+            "width_pt_per_instance": [
+              447.14
+            ],
+            "height_pt_per_instance": [
+              595.73
+            ]
+          },
+          {
+            "xref": 61,
+            "width_px": 1346,
+            "height_px": 1346,
+            "instance_count": 2,
+            "positions_pt": [
+              [
+                388.5,
+                394.5,
+                468.0,
+                474.0
+              ],
+              [
+                114.0,
+                11.25,
+                182.25,
+                79.5
+              ]
+            ],
+            "width_pt_per_instance": [
+              79.5,
+              68.25
+            ],
+            "height_pt_per_instance": [
+              79.5,
+              68.25
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "comparisons": {
+    "Mekong ALISDA Schedule.pdf": {
+      "current_format": "+66 62 996 9434 | +66 95 102 9528 \u00a0\u2022",
+      "original_format": "+66 95 102 9528 \u00a0\u2022\u00a0 +66 61 442",
+      "format_string_match": false,
+      "has_paren_zero_current": false,
+      "has_paren_zero_original": false,
+      "replaced_number_spans": [
+        {
+          "text": "\u00a0 062-996-9434",
+          "font": "Type3 (270 0 R)",
+          "size_pt": 7.488,
+          "color_rgb": [
+            234,
+            241,
+            250
+          ],
+          "bbox_pt": [
+            735.59,
+            218.32,
+            791.19,
+            225.81
+          ],
+          "is_helvetica": false,
+          "is_type3": true
+        },
+        {
+          "text": "+66 62 996 9434",
+          "font": "Helvetica",
+          "size_pt": 7.29,
+          "color_rgb": [
+            74,
+            70,
+            54
+          ],
+          "bbox_pt": [
+            772.48,
+            544.08,
+            827.48,
+            554.1
+          ],
+          "is_helvetica": true,
+          "is_type3": false
+        }
+      ],
+      "original_old_number_spans": [
+        {
+          "text": "66 61 442",
+          "font": "Type3 (600 0 R)",
+          "size_pt": 7.294,
+          "color_rgb": [
+            74,
+            70,
+            54
+          ],
+          "bbox_pt": [
+            776.82,
+            545.43,
+            811.48,
+            552.72
+          ],
+          "is_helvetica": false,
+          "is_type3": true
+        },
+        {
+          "text": "5645",
+          "font": "Type3 (600 0 R)",
+          "size_pt": 7.294,
+          "color_rgb": [
+            74,
+            70,
+            54
+          ],
+          "bbox_pt": [
+            691.86,
+            554.79,
+            709.9,
+            562.08
+          ],
+          "is_helvetica": false,
+          "is_type3": true
+        }
+      ],
+      "replaced_uses_helvetica": false,
+      "original_old_uses_type3": true
+    },
+    "Mekong Poster ChiangKhong.pdf": {
+      "current_format": "+66 (0) 95 102 9528 | +66 (0) 62 996 9434",
+      "original_format": "+66 (0) 95 102 9528 | +66 (0) 61 442 5645",
+      "format_string_match": false,
+      "has_paren_zero_current": true,
+      "has_paren_zero_original": true,
+      "replaced_number_spans": [
+        {
+          "text": "+66 (0) 62 996 9434",
+          "font": "Helvetica",
+          "size_pt": 10.0,
+          "color_rgb": [
+            234,
+            241,
+            250
+          ],
+          "bbox_pt": [
+            578.99,
+            438.41,
+            669.31,
+            452.15
+          ],
+          "is_helvetica": true,
+          "is_type3": false
+        }
+      ],
+      "original_old_number_spans": [
+        {
+          "text": "66 (0) 61 442 5645",
+          "font": "Type3 (78 0 R)",
+          "size_pt": 9.997,
+          "color_rgb": [
+            234,
+            241,
+            250
+          ],
+          "bbox_pt": [
+            584.81,
+            437.57,
+            673.22,
+            447.57
+          ],
+          "is_helvetica": false,
+          "is_type3": true
+        }
+      ],
+      "replaced_uses_helvetica": true,
+      "original_old_uses_type3": true
+    },
+    "Mekong Poster ChiangMai.pdf": {
+      "current_format": "+66 (0) 95 102 9528 | +66 (0) 62 996 9434",
+      "original_format": "+66 (0) 95 102 9528 | +66 (0) 61 442 5645",
+      "format_string_match": false,
+      "has_paren_zero_current": true,
+      "has_paren_zero_original": true,
+      "replaced_number_spans": [
+        {
+          "text": "+66 (0) 62 996 9434",
+          "font": "Helvetica",
+          "size_pt": 10.0,
+          "color_rgb": [
+            234,
+            241,
+            250
+          ],
+          "bbox_pt": [
+            578.99,
+            438.41,
+            669.31,
+            452.15
+          ],
+          "is_helvetica": true,
+          "is_type3": false
+        }
+      ],
+      "original_old_number_spans": [
+        {
+          "text": "66 (0) 61 442 5645",
+          "font": "Type3 (88 0 R)",
+          "size_pt": 9.997,
+          "color_rgb": [
+            234,
+            241,
+            250
+          ],
+          "bbox_pt": [
+            584.81,
+            437.57,
+            673.22,
+            447.57
+          ],
+          "is_helvetica": false,
+          "is_type3": true
+        }
+      ],
+      "replaced_uses_helvetica": true,
+      "original_old_uses_type3": true
+    },
+    "Mekong Poster ChiangRai.pdf": {
+      "current_format": "+66 (0) 95 102 9528 | +66 (0) 62 996 9434",
+      "original_format": "+66 (0) 95 102 9528 | +66 (0) 61 442 5645",
+      "format_string_match": false,
+      "has_paren_zero_current": true,
+      "has_paren_zero_original": true,
+      "replaced_number_spans": [
+        {
+          "text": "+66 (0) 62 996 9434",
+          "font": "Helvetica",
+          "size_pt": 10.0,
+          "color_rgb": [
+            234,
+            241,
+            250
+          ],
+          "bbox_pt": [
+            578.99,
+            438.41,
+            669.31,
+            452.15
+          ],
+          "is_helvetica": true,
+          "is_type3": false
+        }
+      ],
+      "original_old_number_spans": [
+        {
+          "text": "66 (0) 61 442 5645",
+          "font": "Type3 (78 0 R)",
+          "size_pt": 9.997,
+          "color_rgb": [
+            234,
+            241,
+            250
+          ],
+          "bbox_pt": [
+            584.81,
+            437.57,
+            673.22,
+            447.57
+          ],
+          "is_helvetica": false,
+          "is_type3": true
+        }
+      ],
+      "replaced_uses_helvetica": true,
+      "original_old_uses_type3": true
+    },
+    "Mekong Poster HuayXai.pdf": {
+      "current_format": "+66 (0) 95 102 9528 | +66 (0) 62 996 9434",
+      "original_format": "+66 (0) 95 102 9528 | +66 (0) 61 442 5645",
+      "format_string_match": false,
+      "has_paren_zero_current": true,
+      "has_paren_zero_original": true,
+      "replaced_number_spans": [
+        {
+          "text": "+66 (0) 62 996 9434",
+          "font": "Helvetica",
+          "size_pt": 10.0,
+          "color_rgb": [
+            234,
+            241,
+            250
+          ],
+          "bbox_pt": [
+            578.99,
+            431.66,
+            669.31,
+            445.4
+          ],
+          "is_helvetica": true,
+          "is_type3": false
+        }
+      ],
+      "original_old_number_spans": [
+        {
+          "text": "66 (0) 61 442 5645",
+          "font": "Type3 (78 0 R)",
+          "size_pt": 9.997,
+          "color_rgb": [
+            234,
+            241,
+            250
+          ],
+          "bbox_pt": [
+            584.81,
+            430.82,
+            673.22,
+            440.82
+          ],
+          "is_helvetica": false,
+          "is_type3": true
+        }
+      ],
+      "replaced_uses_helvetica": true,
+      "original_old_uses_type3": true
+    }
+  },
+  "logo_placement_diffs": {
+    "Mekong ALISDA Schedule.pdf": [
+      {
+        "xref": 36,
+        "instance_count": 2,
+        "width_pt": [
+          48.96,
+          103.68
+        ],
+        "height_pt": [
+          48.96,
+          102.96
+        ],
+        "width_pt_delta": 54.72,
+        "height_pt_delta": 54.0,
+        "positions_pt": [
+          [
+            633.16,
+            520.94,
+            682.12,
+            569.9
+          ],
+          [
+            53.56,
+            59.42,
+            157.24,
+            162.38
+          ]
+        ]
+      }
+    ],
+    "Mekong Poster ChiangKhong.pdf": [
+      {
+        "xref": 55,
+        "instance_count": 2,
+        "width_pt": [
+          79.5,
+          68.25
+        ],
+        "height_pt": [
+          79.5,
+          68.25
+        ],
+        "width_pt_delta": 11.25,
+        "height_pt_delta": 11.25,
+        "positions_pt": [
+          [
+            388.5,
+            394.5,
+            468.0,
+            474.0
+          ],
+          [
+            114.0,
+            11.25,
+            182.25,
+            79.5
+          ]
+        ]
+      }
+    ],
+    "Mekong Poster ChiangMai.pdf": [
+      {
+        "xref": 64,
+        "instance_count": 2,
+        "width_pt": [
+          79.5,
+          68.25
+        ],
+        "height_pt": [
+          79.5,
+          68.25
+        ],
+        "width_pt_delta": 11.25,
+        "height_pt_delta": 11.25,
+        "positions_pt": [
+          [
+            388.5,
+            394.5,
+            468.0,
+            474.0
+          ],
+          [
+            114.0,
+            11.25,
+            182.25,
+            79.5
+          ]
+        ]
+      }
+    ],
+    "Mekong Poster ChiangRai.pdf": [
+      {
+        "xref": 55,
+        "instance_count": 2,
+        "width_pt": [
+          79.5,
+          68.25
+        ],
+        "height_pt": [
+          79.5,
+          68.25
+        ],
+        "width_pt_delta": 11.25,
+        "height_pt_delta": 11.25,
+        "positions_pt": [
+          [
+            388.5,
+            394.5,
+            468.0,
+            474.0
+          ],
+          [
+            114.0,
+            11.25,
+            182.25,
+            79.5
+          ]
+        ]
+      }
+    ],
+    "Mekong Poster HuayXai.pdf": [
+      {
+        "xref": 55,
+        "instance_count": 2,
+        "width_pt": [
+          79.5,
+          68.25
+        ],
+        "height_pt": [
+          79.5,
+          68.25
+        ],
+        "width_pt_delta": 11.25,
+        "height_pt_delta": 11.25,
+        "positions_pt": [
+          [
+            388.5,
+            394.5,
+            468.0,
+            474.0
+          ],
+          [
+            114.0,
+            11.25,
+            182.25,
+            79.5
+          ]
+        ]
+      }
+    ]
+  },
+  "alpha_stats": {
+    "path": "editable/assets/mekong-transfer-logo-transparent.png",
+    "dimensions_px": [
+      2048,
+      2048
+    ],
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "alpha_mean": 170.69,
+    "fully_transparent_pct": 32.2,
+    "fully_opaque_pct": 63.12,
+    "partial_alpha_pct": 4.68,
+    "partial_alpha_white_rgb230_count": 37,
+    "partial_alpha_white_rgb230_pct_of_partial": 0.02
+  },
+  "crops": [
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-current-phones.png",
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-current-logo-xref31-inst0.png",
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-current-logo-xref36-inst0.png",
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-current-logo-xref36-inst1.png",
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-current-logo-xref37-inst0.png",
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-original-phones.png",
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-original-logo-xref43-inst0.png",
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-original-logo-xref54-inst0.png",
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-original-logo-xref54-inst1.png",
+    ".impeccable/critique/crops/Mekong-ALISDA-Schedule-original-logo-xref56-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangKhong-current-phones.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangKhong-current-logo-xref5-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangKhong-current-logo-xref55-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangKhong-current-logo-xref55-inst1.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangKhong-original-phones.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangKhong-original-logo-xref5-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangKhong-original-logo-xref61-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangKhong-original-logo-xref61-inst1.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangMai-current-phones.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangMai-current-logo-xref5-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangMai-current-logo-xref64-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangMai-current-logo-xref64-inst1.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangMai-original-phones.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangMai-original-logo-xref5-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangMai-original-logo-xref71-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangMai-original-logo-xref71-inst1.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangRai-current-phones.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangRai-current-logo-xref5-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangRai-current-logo-xref55-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangRai-current-logo-xref55-inst1.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangRai-original-phones.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangRai-original-logo-xref5-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangRai-original-logo-xref61-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-ChiangRai-original-logo-xref61-inst1.png",
+    ".impeccable/critique/crops/Mekong-Poster-HuayXai-current-phones.png",
+    ".impeccable/critique/crops/Mekong-Poster-HuayXai-current-logo-xref5-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-HuayXai-current-logo-xref55-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-HuayXai-current-logo-xref55-inst1.png",
+    ".impeccable/critique/crops/Mekong-Poster-HuayXai-original-phones.png",
+    ".impeccable/critique/crops/Mekong-Poster-HuayXai-original-logo-xref5-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-HuayXai-original-logo-xref61-inst0.png",
+    ".impeccable/critique/crops/Mekong-Poster-HuayXai-original-logo-xref61-inst1.png"
+  ],
+  "mismatches": [
+    "Mekong ALISDA Schedule.pdf: replaced phone spans do NOT all use Helvetica",
+    "Mekong ALISDA Schedule.pdf: logo xref 36 size differs across placements width_delta=54.72pt height_delta=54.0pt",
+    "Mekong Poster ChiangKhong.pdf: replaced phone spans use Helvetica (not original Type3)",
+    "Mekong Poster ChiangKhong.pdf: logo xref 55 size differs across placements width_delta=11.25pt height_delta=11.25pt",
+    "Mekong Poster ChiangMai.pdf: replaced phone spans use Helvetica (not original Type3)",
+    "Mekong Poster ChiangMai.pdf: logo xref 64 size differs across placements width_delta=11.25pt height_delta=11.25pt",
+    "Mekong Poster ChiangRai.pdf: replaced phone spans use Helvetica (not original Type3)",
+    "Mekong Poster ChiangRai.pdf: logo xref 55 size differs across placements width_delta=11.25pt height_delta=11.25pt",
+    "Mekong Poster HuayXai.pdf: replaced phone spans use Helvetica (not original Type3)",
+    "Mekong Poster HuayXai.pdf: logo xref 55 size differs across placements width_delta=11.25pt height_delta=11.25pt",
+    "Cross-doc: posters use +66 (0) XX format; schedule uses +66 XX without (0). Poster sample: +66 (0) 95 102 9528 | +66 (0) 62 996 9434... | Schedule: +66 62 996 9434 | +66 95 102 9528 \u00a0\u2022..."
+  ],
+  "skipped": []
+}

@@ -20,11 +20,17 @@ venv/
 Thumbs.db
 *.log
 
-# Cursor / local tooling (keep skills out of public repo if preferred)
-# .cursor/
-
 # Impeccable cache
 .impeccable/critique/crops/
 
 # TypeScript
 *.tsbuildinfo
+
+# Vercel
+.vercel
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
