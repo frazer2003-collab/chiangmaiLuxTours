@@ -1,0 +1,30 @@
+# Dependencies & builds
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Environment & secrets
+.env
+.env.*
+
+# OS & editor
+.DS_Store
+Thumbs.db
+*.log
+
+# Cursor / local tooling (keep skills out of public repo if preferred)
+# .cursor/
+
+# Impeccable cache
+.impeccable/critique/crops/
+
+# TypeScript
+*.tsbuildinfo
