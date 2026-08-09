@@ -57,4 +57,6 @@ Mobile-first panel for dates, prices, and bookings. Requires Supabase.
 
 **Tabs:** Bookings (default) · Dates (per tour) · Tours (price). EN/TH toggle in the header.
 
-Add the same env vars in Vercel → Project → Settings → Environment Variables before deploying admin to production.
+Add the same env vars in Vercel → Project → Settings → Environment Variables, then **Redeploy** (required so `NEXT_PUBLIC_*` vars are baked into the browser bundle).
+
+`NEXT_PUBLIC_SUPABASE_URL` must look like `https://abcdefghijklmnop.supabase.co` — not your Vercel site URL.

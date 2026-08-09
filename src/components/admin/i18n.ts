@@ -44,7 +44,10 @@ export const translations = {
     loginError: "Could not sign in. Check email and password.",
     notStaff:
       "This account is not staff. Run supabase/migrations/20260809100000_staff_allowlist.sql in SQL Editor, or set STAFF_EMAILS in env.",
-    supabaseMissing: "Admin requires Supabase. Add env vars and run the migration.",
+    supabaseMissing:
+      "Admin requires Supabase env vars. Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY, then redeploy.",
+    supabaseUrlWrong:
+      "Supabase URL is wrong or the site was not redeployed after adding env vars. Use https://YOUR-PROJECT.supabase.co and redeploy on Vercel.",
     filterPending: "Needs action",
     loading: "Loading…",
     errorRetry: "Something went wrong. Try again.",
@@ -93,7 +96,9 @@ export const translations = {
     updatePrice: "อัปเดตราคา",
     loginError: "เข้าสู่ระบบไม่สำเร็จ ตรวจสอบอีเมลและรหัสผ่าน",
     notStaff: "เข้าสู่ระบบแล้ว แต่บัญชีนี้ไม่ใช่ staff — ตั้ง \"role\": \"staff\" ใน Raw App Meta Data",
-    supabaseMissing: "แอดมินต้องใช้ Supabase ตั้งค่า env และรัน migration",
+    supabaseMissing: "แอดมินต้องใช้ Supabase ตั้งค่า env แล้ว redeploy",
+    supabaseUrlWrong:
+      "URL Supabase ผิด หรือยังไม่ได้ redeploy หลังเพิ่ม env — ใช้ https://YOUR-PROJECT.supabase.co",
     filterPending: "ต้องดำเนินการ",
     loading: "กำลังโหลด…",
     errorRetry: "เกิดข้อผิดพลาด ลองอีกครั้ง",

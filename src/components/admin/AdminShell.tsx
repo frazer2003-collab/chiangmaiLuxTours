@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { confirmStaffAccess } from "@/lib/actions/auth";
+import {
+  describeSupabaseConfigProblem,
+  isSupabasePublicConfigured,
+} from "@/lib/supabase/env";
+import { hasStaffRole } from "@/lib/auth/staff-check";
 import type { DbBooking, DbTourDate } from "@/lib/db/types";
 import { AdminLocaleProvider, useAdminLocale } from "./AdminLocaleProvider";
 import { LanguageToggle } from "./LanguageToggle";
@@ -145,15 +149,22 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!configured) {
+
+    const configProblem = describeSupabaseConfigProblem();
+    if (configProblem) {
+      setError(configProblem);
+      return;
+    }
+    if (!configured || !isSupabasePublicConfigured()) {
       setError(tr("supabaseMissing"));
       return;
     }
+
     startTransition(async () => {
       try {
         const supabase = createClient();
         const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
         if (signInError) {
@@ -161,16 +172,43 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
           return;
         }
 
-        const access = await confirmStaffAccess();
-        if (!access.ok) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (hasStaffRole(user)) {
+          router.replace("/admin");
+          router.refresh();
+          return;
+        }
+
+        const { data: staffRow, error: staffError } = await supabase
+          .from("staff_emails")
+          .select("email")
+          .eq("email", user!.email!.toLowerCase())
+          .maybeSingle();
+
+        if (staffError) {
+          setError(staffError.message);
+          await supabase.auth.signOut();
+          return;
+        }
+
+        if (!staffRow) {
           await supabase.auth.signOut();
           setError(tr("notStaff"));
           return;
         }
+
         router.replace("/admin");
         router.refresh();
-      } catch {
-        setError(tr("loginError"));
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("DOCTYPE") || msg.includes("not valid JSON")) {
+          setError(tr("supabaseUrlWrong"));
+          return;
+        }
+        setError(msg || tr("loginError"));
       }
     });
   }
