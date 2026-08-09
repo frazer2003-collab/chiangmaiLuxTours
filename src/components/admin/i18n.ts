@@ -19,6 +19,8 @@ export const translations = {
     upcoming: "Upcoming",
     noBookings: "No bookings yet",
     noBookingsHint: "Web bookings will appear here.",
+    noDates: "No dates open for this tour",
+    noDatesHint: "Add a departure date above to start taking bookings.",
     passengers: "passengers",
     passenger: "passenger",
     status: "Status",
@@ -29,6 +31,7 @@ export const translations = {
     refund: "Mark refunded",
     refundNote: "Refund note",
     refundConfirm: "Mark this booking as refunded? Payment is handled offline until Stripe is connected.",
+    refundConfirmTitle: "Mark as refunded?",
     confirm: "Confirm",
     cancel: "Cancel",
     addDate: "Add date",
@@ -41,18 +44,38 @@ export const translations = {
     selectTour: "Select tour",
     priceThb: "Price (THB)",
     updatePrice: "Update price",
-    loginError: "Could not sign in. Check email and password.",
-    notStaff:
-      "This account is not staff. Run supabase/migrations/20260809100000_staff_allowlist.sql in SQL Editor, or set STAFF_EMAILS in env.",
-    supabaseMissing:
-      "Admin requires Supabase env vars. Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY, then redeploy.",
-    supabaseUrlWrong:
-      "Supabase URL is wrong or the site was not redeployed after adding env vars. Use https://YOUR-PROJECT.supabase.co and redeploy on Vercel.",
+    loginSubtitle: "Staff only — use the email your manager set up.",
+    loginInvalidCredentials:
+      "Email or password didn't match. Check both and try again.",
+    loginPasswordTooShort: "Password must be at least 8 characters.",
+    loginEmailNotConfirmed:
+      "This email hasn't been confirmed yet. Ask your manager to resend the invite.",
+    loginTooManyAttempts: "Too many tries. Wait a minute, then try again.",
+    loginNotStaff:
+      "This account doesn't have staff access. Ask your manager to add your email.",
+    loginAccessCheckFailed:
+      "Couldn't verify staff access. Try again in a moment.",
+    loginSetupUnavailable:
+      "Staff login isn't available right now. Ask your manager or try again later.",
+    loginConnectionError:
+      "Couldn't reach the login service. Check your connection and try again.",
+    loginGenericError: "Couldn't sign in. Check your details and try again.",
+    backToSite: "Back to website",
     filterPending: "Needs action",
     loading: "Loading…",
+    loadingAdmin: "Loading admin…",
+    refreshing: "Refreshing…",
+    saving: "Saving…",
+    signingIn: "Signing in…",
+    adding: "Adding…",
+    updating: "Updating…",
+    tryAgain: "Try again",
+    refreshList: "Refresh list",
     errorRetry: "Something went wrong. Try again.",
     removeDateConfirm: "Remove this date?",
+    removeDateConfirmTitle: "Remove this date?",
     hasBookingsWarning: "This date has bookings. Close it instead?",
+    closeDateConfirmTitle: "Close this date?",
   },
   th: {
     appName: "Mekong Transfer",
@@ -72,6 +95,8 @@ export const translations = {
     upcoming: "ที่จะมาถึง",
     noBookings: "ยังไม่มีการจอง",
     noBookingsHint: "การจองจากเว็บจะแสดงที่นี่",
+    noDates: "ยังไม่มีวันที่เปิดสำหรับทัวร์นี้",
+    noDatesHint: "เพิ่มวันที่ด้านบนเพื่อรับการจอง",
     passengers: "ผู้โดยสาร",
     passenger: "ผู้โดยสาร",
     status: "สถานะ",
@@ -82,6 +107,7 @@ export const translations = {
     refund: "ทำเครื่องหมายคืนเงิน",
     refundNote: "หมายเหตุการคืนเงิน",
     refundConfirm: "ทำเครื่องหมายว่าคืนเงินแล้ว? การชำระเงินจัดการนอกระบบจนกว่า Stripe จะเชื่อมต่อ",
+    refundConfirmTitle: "ทำเครื่องหมายคืนเงิน?",
     confirm: "ยืนยัน",
     cancel: "ยกเลิก",
     addDate: "เพิ่มวันที่",
@@ -94,16 +120,37 @@ export const translations = {
     selectTour: "เลือกทัวร์",
     priceThb: "ราคา (บาท)",
     updatePrice: "อัปเดตราคา",
-    loginError: "เข้าสู่ระบบไม่สำเร็จ ตรวจสอบอีเมลและรหัสผ่าน",
-    notStaff: "เข้าสู่ระบบแล้ว แต่บัญชีนี้ไม่ใช่ staff — ตั้ง \"role\": \"staff\" ใน Raw App Meta Data",
-    supabaseMissing: "แอดมินต้องใช้ Supabase ตั้งค่า env แล้ว redeploy",
-    supabaseUrlWrong:
-      "URL Supabase ผิด หรือยังไม่ได้ redeploy หลังเพิ่ม env — ใช้ https://YOUR-PROJECT.supabase.co",
+    loginSubtitle: "สำหรับพนักงานเท่านั้น — ใช้อีเมลที่ผู้จัดการตั้งให้",
+    loginInvalidCredentials:
+      "อีเมลหรือรหัสผ่านไม่ตรง ตรวจสอบแล้วลองอีกครั้ง",
+    loginPasswordTooShort: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
+    loginEmailNotConfirmed:
+      "อีเมลนี้ยังไม่ได้ยืนยัน ขอให้ผู้จัดการส่งคำเชิญอีกครั้ง",
+    loginTooManyAttempts: "ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่",
+    loginNotStaff:
+      "บัญชีนี้ยังไม่มีสิทธิ์พนักงาน ขอให้ผู้จัดการเพิ่มอีเมลของคุณ",
+    loginAccessCheckFailed: "ตรวจสอบสิทธิ์ไม่สำเร็จ ลองอีกครั้งในอีกสักครู่",
+    loginSetupUnavailable:
+      "เข้าสู่ระบบพนักงานใช้ไม่ได้ตอนนี้ ติดต่อผู้จัดการหรือลองใหม่ภายหลัง",
+    loginConnectionError:
+      "เชื่อมต่อบริการเข้าสู่ระบบไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง",
+    loginGenericError: "เข้าสู่ระบบไม่สำเร็จ ตรวจสอบข้อมูลแล้วลองอีกครั้ง",
+    backToSite: "กลับไปเว็บไซต์",
     filterPending: "ต้องดำเนินการ",
     loading: "กำลังโหลด…",
+    loadingAdmin: "กำลังโหลดแอดมิน…",
+    refreshing: "กำลังรีเฟรช…",
+    saving: "กำลังบันทึก…",
+    signingIn: "กำลังเข้าสู่ระบบ…",
+    adding: "กำลังเพิ่ม…",
+    updating: "กำลังอัปเดต…",
+    tryAgain: "ลองอีกครั้ง",
+    refreshList: "รีเฟรชรายการ",
     errorRetry: "เกิดข้อผิดพลาด ลองอีกครั้ง",
     removeDateConfirm: "ลบวันที่นี้?",
+    removeDateConfirmTitle: "ลบวันที่นี้?",
     hasBookingsWarning: "วันที่นี้มีการจอง ปิดแทนการลบ?",
+    closeDateConfirmTitle: "ปิดวันที่นี้?",
   },
 } as const;
 

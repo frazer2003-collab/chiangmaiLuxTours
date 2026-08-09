@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminLocaleProvider } from "@/components/admin/AdminLocaleProvider";
+import { AdminShellFallback } from "@/components/admin/AdminFeedback";
 import { getStaffSession } from "@/lib/auth/staff";
 import { tours } from "@/lib/tours";
 import type { DbBooking, DbTourDate } from "@/lib/db/types";
@@ -46,7 +48,13 @@ export default async function AdminPage() {
   const pendingCount = bookings.filter((b) => b.status === "pending").length;
 
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <AdminLocaleProvider>
+          <AdminShellFallback />
+        </AdminLocaleProvider>
+      }
+    >
       <AdminShell
         bookings={bookings}
         datesByTour={datesByTour}

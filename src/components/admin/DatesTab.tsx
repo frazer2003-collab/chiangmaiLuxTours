@@ -11,6 +11,17 @@ import {
   updateTourDateCapacity,
 } from "@/lib/actions/admin";
 import { useAdminLocale } from "./AdminLocaleProvider";
+import {
+  AdminSkeletonList,
+  AdminSpinner,
+  AdminStatusBanner,
+} from "./AdminFeedback";
+import { AdminConfirmDialog } from "./AdminConfirmDialog";
+
+type DateConfirm =
+  | { kind: "close"; dateId: string }
+  | { kind: "remove"; dateId: string }
+  | null;
 
 function formatDate(iso: string, locale: string) {
   return new Date(iso + "T12:00:00").toLocaleDateString(locale, {
@@ -31,61 +42,106 @@ export function DatesTab({
   const [newDate, setNewDate] = useState("");
   const [newCapacity, setNewCapacity] = useState(20);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [loadingTour, setLoadingTour] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [action, setAction] = useState<"add" | "reload" | "close" | "remove" | null>(
+    null,
+  );
+  const [dateConfirm, setDateConfirm] = useState<DateConfirm>(null);
 
   const localeTag = locale === "th" ? "th-TH" : "en-GB";
   const dates = useMemo(() => datesByTour[tourId] ?? [], [datesByTour, tourId]);
 
-  function reloadDates(id: string) {
+  function reloadDates(id: string, mode: "reload" | "add" = "reload") {
+    setError(null);
+    setLoadingTour(true);
+    setAction(mode);
     startTransition(async () => {
       const result = await fetchAdminTourDates(id);
+      setLoadingTour(false);
+      setAction(null);
       if (result.ok && result.data) {
         setDatesByTour((prev) => ({ ...prev, [id]: result.data! }));
+        return;
       }
+      setError(!result.ok ? result.error : tr("errorRetry"));
     });
   }
 
   function handleAddDate() {
     setError(null);
+    setSuccess(null);
+    setAction("add");
     startTransition(async () => {
       const result = await addTourDate({
         tourId,
         date: newDate,
         capacity: newCapacity,
       });
+      setAction(null);
       if (!result.ok) {
         setError(result.error);
         return;
       }
       setNewDate("");
-      reloadDates(tourId);
+      setSuccess(tr("saved"));
+      reloadDates(tourId, "add");
     });
   }
 
   function handleCapacityChange(id: string, capacity: number) {
+    setError(null);
+    setSuccess(null);
     startTransition(async () => {
       const result = await updateTourDateCapacity({ id, capacity });
-      if (!result.ok) setError(result.error);
-      else reloadDates(tourId);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setSuccess(tr("saved"));
+      reloadDates(tourId);
     });
   }
 
-  function handleRemove(id: string, bookedCount: number) {
+  function handleRemoveClick(id: string, bookedCount: number) {
     if (bookedCount > 0) {
-      const ok = window.confirm(tr("hasBookingsWarning"));
-      if (!ok) return;
+      setDateConfirm({ kind: "close", dateId: id });
+      return;
+    }
+    setDateConfirm({ kind: "remove", dateId: id });
+  }
+
+  function confirmDateAction() {
+    if (!dateConfirm) return;
+    setError(null);
+    setSuccess(null);
+
+    if (dateConfirm.kind === "close") {
+      setAction("close");
       startTransition(async () => {
-        const closed = await closeTourDate({ id });
+        const closed = await closeTourDate({ id: dateConfirm.dateId });
+        setAction(null);
+        setDateConfirm(null);
         if (!closed.ok) setError(closed.error);
-        else reloadDates(tourId);
+        else {
+          setSuccess(tr("saved"));
+          reloadDates(tourId);
+        }
       });
       return;
     }
-    if (!window.confirm(tr("removeDateConfirm"))) return;
+
+    setAction("remove");
     startTransition(async () => {
-      const result = await removeTourDate({ id, force: true });
+      const result = await removeTourDate({ id: dateConfirm.dateId, force: true });
+      setAction(null);
+      setDateConfirm(null);
       if (!result.ok) setError(result.error);
-      else reloadDates(tourId);
+      else {
+        setSuccess(tr("saved"));
+        reloadDates(tourId);
+      }
     });
   }
 
@@ -133,74 +189,105 @@ export function DatesTab({
             type="button"
             disabled={pending || !newDate}
             onClick={handleAddDate}
-            className="min-h-11 rounded-full bg-[var(--marker-yellow)] px-4 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--marker-yellow)] px-4 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
           >
-            {tr("addDate")}
+            {action === "add" ? <AdminSpinner /> : null}
+            {action === "add" ? tr("adding") : tr("addDate")}
           </button>
         </div>
       </div>
 
       {error ? (
-        <p className="text-sm text-[var(--river-blue-deep)]" role="alert">
-          {error}
-        </p>
+        <AdminStatusBanner tone="error" message={error} onRetry={() => reloadDates(tourId)} />
       ) : null}
+      {success ? <AdminStatusBanner tone="success" message={success} /> : null}
 
-      <ul className="space-y-2">
-        {dates.length === 0 ? (
-          <li className="rounded-2xl bg-white px-4 py-8 text-center text-sm text-[var(--ink-muted)] ring-1 ring-[var(--river-blue)]/10">
-            {tr("addDate")}
-          </li>
-        ) : (
-          dates.map((row) => {
-            const isFull = row.booked_count >= row.capacity;
-            return (
-              <li
-                key={row.id}
-                className="rounded-2xl bg-white px-4 py-3 ring-1 ring-[var(--river-blue)]/10"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-[var(--ink)]">
-                      {formatDate(row.date, localeTag)}
-                    </p>
-                    <p className="text-sm text-[var(--ink-muted)]">
-                      {row.booked_count} / {row.capacity} {tr("booked")}
-                      {isFull ? ` · ${tr("full")}` : ""}
-                    </p>
+      {loadingTour ? (
+        <AdminSkeletonList count={3} />
+      ) : (
+        <ul className="space-y-2">
+          {dates.length === 0 ? (
+            <li className="rounded-2xl bg-white px-4 py-8 text-center ring-1 ring-[var(--river-blue)]/10">
+              <p className="text-sm font-medium text-[var(--ink)]">{tr("noDates")}</p>
+              <p className="mt-1 text-xs text-[var(--ink-muted)]">{tr("noDatesHint")}</p>
+            </li>
+          ) : (
+            dates.map((row) => {
+              const isFull = row.booked_count >= row.capacity;
+              return (
+                <li
+                  key={row.id}
+                  className="rounded-2xl bg-white px-4 py-3 ring-1 ring-[var(--river-blue)]/10"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-[var(--ink)]">
+                        {formatDate(row.date, localeTag)}
+                      </p>
+                      <p className="text-sm text-[var(--ink-muted)]">
+                        {row.booked_count} / {row.capacity} {tr("booked")}
+                        {isFull ? ` · ${tr("full")}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="sr-only" htmlFor={`cap-${row.id}`}>
+                        {tr("capacity")}
+                      </label>
+                      <input
+                        id={`cap-${row.id}`}
+                        type="number"
+                        min={row.booked_count}
+                        max={999}
+                        defaultValue={row.capacity}
+                        disabled={pending}
+                        onBlur={(e) =>
+                          handleCapacityChange(row.id, Number(e.target.value))
+                        }
+                        className="min-h-11 w-20 rounded-lg border border-[var(--river-blue)]/20 px-2 py-1.5 text-center text-sm"
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label className="sr-only" htmlFor={`cap-${row.id}`}>
-                      {tr("capacity")}
-                    </label>
-                    <input
-                      id={`cap-${row.id}`}
-                      type="number"
-                      min={row.booked_count}
-                      max={999}
-                      defaultValue={row.capacity}
-                      onBlur={(e) =>
-                        handleCapacityChange(row.id, Number(e.target.value))
-                      }
-                      className="w-16 rounded-lg border border-[var(--river-blue)]/20 px-2 py-1.5 text-center text-sm"
-                    />
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => handleRemoveClick(row.id, row.booked_count)}
+                      className="min-h-10 rounded-full px-3 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 disabled:opacity-50"
+                    >
+                      {row.booked_count > 0 ? tr("closeDate") : tr("removeDate")}
+                    </button>
                   </div>
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => handleRemove(row.id, row.booked_count)}
-                    className="min-h-9 rounded-full px-3 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8"
-                  >
-                    {row.booked_count > 0 ? tr("closeDate") : tr("removeDate")}
-                  </button>
-                </div>
-              </li>
-            );
-          })
-        )}
-      </ul>
+                </li>
+              );
+            })
+          )}
+        </ul>
+      )}
+      <AdminConfirmDialog
+        open={dateConfirm?.kind === "close"}
+        title={tr("closeDateConfirmTitle")}
+        message={tr("hasBookingsWarning")}
+        hint={tr("closeDateHint")}
+        confirmLabel={tr("closeDate")}
+        variant="primary"
+        pending={action === "close"}
+        onCancel={() => {
+          if (action !== "close") setDateConfirm(null);
+        }}
+        onConfirm={confirmDateAction}
+      />
+      <AdminConfirmDialog
+        open={dateConfirm?.kind === "remove"}
+        title={tr("removeDateConfirmTitle")}
+        message={tr("removeDateConfirm")}
+        confirmLabel={tr("removeDate")}
+        variant="destructive"
+        pending={action === "remove"}
+        onCancel={() => {
+          if (action !== "remove") setDateConfirm(null);
+        }}
+        onConfirm={confirmDateAction}
+      />
     </div>
   );
 }

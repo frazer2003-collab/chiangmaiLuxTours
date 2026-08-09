@@ -9,6 +9,8 @@ import {
   isSupabasePublicConfigured,
 } from "@/lib/supabase/env";
 import { hasStaffRole } from "@/lib/auth/staff-check";
+import { mapLoginError } from "@/lib/auth/login-errors";
+import { AdminSpinner } from "./AdminFeedback";
 import type { DbBooking, DbTourDate } from "@/lib/db/types";
 import { AdminLocaleProvider, useAdminLocale } from "./AdminLocaleProvider";
 import { LanguageToggle } from "./LanguageToggle";
@@ -139,7 +141,7 @@ export function AdminLoginForm({ configured }: { configured: boolean }) {
 }
 
 function AdminLoginFormInner({ configured }: { configured: boolean }) {
-  const { tr } = useAdminLocale();
+  const { locale, tr } = useAdminLocale();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -152,11 +154,12 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
 
     const configProblem = describeSupabaseConfigProblem();
     if (configProblem) {
-      setError(configProblem);
+      console.error("[admin login]", configProblem);
+      setError(tr("loginSetupUnavailable"));
       return;
     }
     if (!configured || !isSupabasePublicConfigured()) {
-      setError(tr("supabaseMissing"));
+      setError(tr("loginSetupUnavailable"));
       return;
     }
 
@@ -168,7 +171,8 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
           password,
         });
         if (signInError) {
-          setError(signInError.message || tr("loginError"));
+          console.error("[admin login]", signInError.message);
+          setError(mapLoginError(locale, signInError.message));
           return;
         }
 
@@ -189,14 +193,15 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
           .maybeSingle();
 
         if (staffError) {
-          setError(staffError.message);
+          console.error("[admin login]", staffError.message);
+          setError(tr("loginAccessCheckFailed"));
           await supabase.auth.signOut();
           return;
         }
 
         if (!staffRow) {
           await supabase.auth.signOut();
-          setError(tr("notStaff"));
+          setError(tr("loginNotStaff"));
           return;
         }
 
@@ -204,11 +209,8 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
         router.refresh();
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        if (msg.includes("DOCTYPE") || msg.includes("not valid JSON")) {
-          setError(tr("supabaseUrlWrong"));
-          return;
-        }
-        setError(msg || tr("loginError"));
+        console.error("[admin login]", msg);
+        setError(mapLoginError(locale, msg));
       }
     });
   }
@@ -222,15 +224,22 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
               {tr("appName")}
             </p>
             <h1 className="text-xl font-semibold text-[var(--ink)]">{tr("adminTitle")}</h1>
+            <p className="mt-1 text-sm text-[var(--ink-muted)]">{tr("loginSubtitle")}</p>
           </div>
           <LanguageToggle />
         </div>
 
         {!configured ? (
-          <p className="mb-4 text-sm text-[var(--ink-muted)]">{tr("supabaseMissing")}</p>
+          <p className="mb-4 text-sm text-[var(--ink-muted)]" role="status">
+            {tr("loginSetupUnavailable")}
+          </p>
         ) : null}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+          aria-disabled={!configured || pending}
+        >
           <div>
             <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
               {tr("email")}
@@ -240,6 +249,7 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
               type="email"
               autoComplete="email"
               required
+              disabled={!configured || pending}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="min-h-11 w-full rounded-xl border border-[var(--river-blue)]/20 px-3 text-base"
@@ -254,6 +264,7 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
               type="password"
               autoComplete="current-password"
               required
+              disabled={!configured || pending}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="min-h-11 w-full rounded-xl border border-[var(--river-blue)]/20 px-3 text-base"
@@ -266,16 +277,17 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
           ) : null}
           <button
             type="submit"
-            disabled={pending}
-            className="min-h-11 w-full rounded-full bg-[var(--river-blue)] text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] disabled:opacity-50"
+            disabled={pending || !configured}
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[var(--river-blue)] text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] disabled:opacity-50"
           >
-            {tr("signIn")}
+            {pending ? <AdminSpinner className="h-4 w-4 text-white" /> : null}
+            {pending ? tr("signingIn") : tr("signIn")}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-[var(--ink-muted)]">
           <Link href="/" className="text-[var(--river-blue)] underline-offset-2 hover:underline">
-            ← Site
+            ← {tr("backToSite")}
           </Link>
         </p>
       </div>

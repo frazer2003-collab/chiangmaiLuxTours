@@ -7,6 +7,12 @@ import { fetchAdminBookings, updateBooking, markBookingRefunded } from "@/lib/ac
 import { useAdminLocale } from "./AdminLocaleProvider";
 import { StatusChip } from "./StatusChip";
 import { IconClose } from "@/components/icons";
+import {
+  AdminSkeletonList,
+  AdminSpinner,
+  AdminStatusBanner,
+} from "./AdminFeedback";
+import { AdminConfirmDialog } from "./AdminConfirmDialog";
 
 type Filter = "all" | "pending" | "upcoming";
 
@@ -32,7 +38,12 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
   const [notes, setNotes] = useState("");
   const [refundNote, setRefundNote] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [messageTone, setMessageTone] = useState<"success" | "error">("success");
+  const [refreshing, setRefreshing] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [action, setAction] = useState<"save" | "refund" | null>(null);
+  const [refundConfirmOpen, setRefundConfirmOpen] = useState(false);
 
   const localeTag = locale === "th" ? "th-TH" : "en-GB";
   const today = new Date().toISOString().slice(0, 10);
@@ -67,15 +78,24 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
     setMessage(null);
   }, [selected]);
 
-  function refresh() {
+  function refresh(options?: { showSkeleton?: boolean }) {
+    const showSkeleton = options?.showSkeleton ?? true;
+    setFetchError(null);
+    if (showSkeleton) setRefreshing(true);
     startTransition(async () => {
       const result = await fetchAdminBookings();
-      if (result.ok && result.data) setBookings(result.data);
+      if (showSkeleton) setRefreshing(false);
+      if (result.ok && result.data) {
+        setBookings(result.data);
+        return;
+      }
+      setFetchError(!result.ok ? result.error : tr("errorRetry"));
     });
   }
 
   function saveBooking() {
     if (!selected) return;
+    setAction("save");
     startTransition(async () => {
       const result = await updateBooking({
         id: selected.id,
@@ -83,12 +103,15 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
         internalNotes: notes,
         refundNote,
       });
+      setAction(null);
       if (!result.ok) {
+        setMessageTone("error");
         setMessage(result.error);
         return;
       }
+      setMessageTone("success");
       setMessage(tr("saved"));
-      refresh();
+      refresh({ showSkeleton: false });
       setSelected((prev) =>
         prev
           ? {
@@ -104,19 +127,23 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
 
   function refundBooking() {
     if (!selected) return;
-    if (!window.confirm(tr("refundConfirm"))) return;
+    setAction("refund");
     startTransition(async () => {
       const result = await markBookingRefunded({
         id: selected.id,
         refundNote,
       });
+      setAction(null);
+      setRefundConfirmOpen(false);
       if (!result.ok) {
+        setMessageTone("error");
         setMessage(result.error);
         return;
       }
       setStatus("refunded");
+      setMessageTone("success");
       setMessage(tr("saved"));
-      refresh();
+      refresh({ showSkeleton: false });
     });
   }
 
@@ -128,7 +155,8 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
         {filters.map((f) => (
           <button
             key={f.id}
@@ -148,9 +176,25 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
             ) : null}
           </button>
         ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => refresh()}
+          disabled={refreshing || pending}
+          className="inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-medium text-[var(--river-blue)] ring-1 ring-[var(--river-blue)]/15 hover:bg-[var(--river-blue)]/8 disabled:opacity-50"
+        >
+          {refreshing ? <AdminSpinner className="h-4 w-4" /> : null}
+          {refreshing ? tr("refreshing") : tr("refreshList")}
+        </button>
       </div>
 
-      {filtered.length === 0 ? (
+      {fetchError ? (
+        <AdminStatusBanner tone="error" message={fetchError} onRetry={refresh} />
+      ) : null}
+
+      {refreshing ? (
+        <AdminSkeletonList count={3} />
+      ) : filtered.length === 0 ? (
         <div className="rounded-2xl bg-white px-5 py-10 text-center ring-1 ring-[var(--river-blue)]/10">
           <p className="font-medium text-[var(--ink)]">{tr("noBookings")}</p>
           <p className="mt-2 text-sm text-[var(--ink-muted)]">{tr("noBookingsHint")}</p>
@@ -197,8 +241,9 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
             onClick={() => setSelected(null)}
           />
           <div
-            role="dialog"
+            aria-busy={pending}
             aria-modal="true"
+            role="dialog"
             className="relative flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-[var(--chart-paper)] shadow-[0_24px_60px_-12px_rgba(15,39,64,0.35)] sm:rounded-2xl"
           >
             <div className="flex items-start justify-between gap-3 border-b border-[var(--river-blue)]/15 px-4 py-3">
@@ -283,9 +328,10 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
               </div>
 
               {message ? (
-                <p className="text-sm text-[var(--river-blue-deep)]" role="status">
-                  {message}
-                </p>
+                <AdminStatusBanner
+                  tone={messageTone}
+                  message={message}
+                />
               ) : null}
             </div>
 
@@ -294,24 +340,39 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
                 <button
                   type="button"
                   disabled={pending}
-                  onClick={refundBooking}
-                  className="min-h-11 rounded-full bg-[var(--river-navy)]/10 px-4 text-sm font-semibold text-[var(--river-navy)] hover:bg-[var(--river-navy)]/15 disabled:opacity-50"
+                  onClick={() => setRefundConfirmOpen(true)}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--river-navy)]/10 px-4 text-sm font-semibold text-[var(--river-navy)] hover:bg-[var(--river-navy)]/15 disabled:opacity-50"
                 >
-                  {tr("refund")}
+                  {action === "refund" ? <AdminSpinner /> : null}
+                  {action === "refund" ? tr("saving") : tr("refund")}
                 </button>
               ) : null}
               <button
                 type="button"
                 disabled={pending}
                 onClick={saveBooking}
-                className="min-h-11 rounded-full bg-[var(--river-blue)] px-4 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] disabled:opacity-50"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--river-blue)] px-4 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] disabled:opacity-50"
               >
-                {tr("save")}
+                {action === "save" ? <AdminSpinner className="h-4 w-4 text-white" /> : null}
+                {action === "save" ? tr("saving") : tr("save")}
               </button>
             </div>
           </div>
         </div>
       ) : null}
+
+      <AdminConfirmDialog
+        open={refundConfirmOpen}
+        title={tr("refundConfirmTitle")}
+        message={tr("refundConfirm")}
+        confirmLabel={tr("refund")}
+        variant="destructive"
+        pending={action === "refund"}
+        onCancel={() => {
+          if (action !== "refund") setRefundConfirmOpen(false);
+        }}
+        onConfirm={refundBooking}
+      />
     </div>
   );
 }

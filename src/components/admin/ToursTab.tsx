@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { tours } from "@/lib/tours";
 import { updateTourPrice } from "@/lib/actions/admin";
 import { useAdminLocale } from "./AdminLocaleProvider";
+import { AdminSpinner, AdminStatusBanner } from "./AdminFeedback";
 
 export function ToursTab({
   initialPrices,
@@ -14,23 +15,30 @@ export function ToursTab({
   const [prices, setPrices] = useState(initialPrices);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string | null>(null);
+  const [messageTone, setMessageTone] = useState<"success" | "error">("success");
   const [pending, startTransition] = useTransition();
+  const [savingTourId, setSavingTourId] = useState<string | null>(null);
 
   function save(tourId: string) {
     const raw = drafts[tourId] ?? String(prices[tourId] ?? "");
     const value = Number.parseInt(raw.replace(/[^\d]/g, ""), 10);
     if (!value || value <= 0) {
+      setMessageTone("error");
       setMessage(tr("errorRetry"));
       return;
     }
 
+    setSavingTourId(tourId);
     startTransition(async () => {
       const result = await updateTourPrice({ tourId, priceThb: value });
+      setSavingTourId(null);
       if (!result.ok) {
+        setMessageTone("error");
         setMessage(result.error);
         return;
       }
       setPrices((prev) => ({ ...prev, [tourId]: value }));
+      setMessageTone("success");
       setMessage(tr("saved"));
     });
   }
@@ -38,9 +46,7 @@ export function ToursTab({
   return (
     <div className="space-y-3">
       {message ? (
-        <p className="text-sm text-[var(--river-blue-deep)]" role="status">
-          {message}
-        </p>
+        <AdminStatusBanner tone={messageTone} message={message} />
       ) : null}
       <ul className="space-y-2">
         {tours.map((tour) => (
@@ -67,16 +73,20 @@ export function ToursTab({
                   onChange={(e) =>
                     setDrafts((prev) => ({ ...prev, [tour.id]: e.target.value }))
                   }
-                  className="min-h-11 w-full rounded-xl border border-[var(--river-blue)]/20 px-3 text-base"
+                  disabled={pending && savingTourId === tour.id}
+                  className="min-h-11 w-full rounded-xl border border-[var(--river-blue)]/20 px-3 text-base disabled:opacity-60"
                 />
               </div>
               <button
                 type="button"
                 disabled={pending}
                 onClick={() => save(tour.id)}
-                className="min-h-11 shrink-0 rounded-full bg-[var(--river-blue)] px-4 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] disabled:opacity-50"
+                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--river-blue)] px-4 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] disabled:opacity-50"
               >
-                {tr("updatePrice")}
+                {savingTourId === tour.id ? (
+                  <AdminSpinner className="h-4 w-4 text-white" />
+                ) : null}
+                {savingTourId === tour.id ? tr("updating") : tr("updatePrice")}
               </button>
             </div>
           </li>
