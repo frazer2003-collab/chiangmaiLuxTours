@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { hasStaffRole } from "@/lib/auth/staff-check";
 
 export async function getStaffSession() {
   if (!isSupabaseConfigured()) {
@@ -13,11 +14,20 @@ export async function getStaffSession() {
 
   if (!user) return { supabase, user: null, isStaff: false };
 
-  const role = user.app_metadata?.role;
+  if (hasStaffRole(user)) {
+    return { supabase, user, isStaff: true };
+  }
+
+  const { data: row } = await supabase
+    .from("staff_emails")
+    .select("email")
+    .eq("email", user.email!.toLowerCase())
+    .maybeSingle();
+
   return {
     supabase,
     user,
-    isStaff: role === "staff",
+    isStaff: Boolean(row),
   };
 }
 

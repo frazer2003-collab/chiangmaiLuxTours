@@ -42,6 +42,8 @@ export const translations = {
     priceThb: "Price (THB)",
     updatePrice: "Update price",
     loginError: "Could not sign in. Check email and password.",
+    notStaff:
+      "This account is not staff. Run supabase/migrations/20260809100000_staff_allowlist.sql in SQL Editor, or set STAFF_EMAILS in env.",
     supabaseMissing: "Admin requires Supabase. Add env vars and run the migration.",
     filterPending: "Needs action",
     loading: "Loading…",
@@ -90,6 +92,7 @@ export const translations = {
     priceThb: "ราคา (บาท)",
     updatePrice: "อัปเดตราคา",
     loginError: "เข้าสู่ระบบไม่สำเร็จ ตรวจสอบอีเมลและรหัสผ่าน",
+    notStaff: "เข้าสู่ระบบแล้ว แต่บัญชีนี้ไม่ใช่ staff — ตั้ง \"role\": \"staff\" ใน Raw App Meta Data",
     supabaseMissing: "แอดมินต้องใช้ Supabase ตั้งค่า env และรัน migration",
     filterPending: "ต้องดำเนินการ",
     loading: "กำลังโหลด…",

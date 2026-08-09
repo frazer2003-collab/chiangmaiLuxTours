@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { confirmStaffAccess } from "@/lib/actions/auth";
 import type { DbBooking, DbTourDate } from "@/lib/db/types";
 import { AdminLocaleProvider, useAdminLocale } from "./AdminLocaleProvider";
 import { LanguageToggle } from "./LanguageToggle";
@@ -156,7 +157,14 @@ function AdminLoginFormInner({ configured }: { configured: boolean }) {
           password,
         });
         if (signInError) {
-          setError(tr("loginError"));
+          setError(signInError.message || tr("loginError"));
+          return;
+        }
+
+        const access = await confirmStaffAccess();
+        if (!access.ok) {
+          await supabase.auth.signOut();
+          setError(tr("notStaff"));
           return;
         }
         router.replace("/admin");

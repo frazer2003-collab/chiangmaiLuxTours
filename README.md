@@ -37,13 +37,23 @@ Mobile-first panel for dates, prices, and bookings. Requires Supabase.
 2. Copy `.env.example` → `.env.local` and fill in URL + anon + service role keys.
 3. Run the migration in `supabase/migrations/20260809000000_admin_schema.sql` (Supabase SQL editor).
 4. In **Authentication → Providers**, disable public sign-up (invite-only).
-5. Create a staff user in **Authentication → Users** and set **Raw App Meta Data**:
+5. Create a staff user: **Authentication → Users → Add user** (use a password **at least 8 characters**, e.g. `Admin123456`).
+6. **Grant staff access** — the dashboard user JSON is **read-only**. Use **SQL Editor** and run:
 
-   ```json
-   { "role": "staff" }
+   `supabase/migrations/20260809100000_staff_allowlist.sql`
+
+   Or paste this minimum:
+
+   ```sql
+   INSERT INTO public.staff_emails (email) VALUES ('admin@hotmail.com')
+   ON CONFLICT (email) DO NOTHING;
    ```
 
-6. Open [http://localhost:3000/admin/login](http://localhost:3000/admin/login) (or `/admin` on production).
+   (Run the main migration first if `staff_emails` does not exist yet.)
+
+   Optional env fallback: `STAFF_EMAILS=admin@hotmail.com` in `.env.local` / Vercel.
+
+7. Open [http://localhost:3000/admin/login](http://localhost:3000/admin/login) (or `/admin` on production).
 
 **Tabs:** Bookings (default) · Dates (per tour) · Tours (price). EN/TH toggle in the header.
 
