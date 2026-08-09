@@ -9,6 +9,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { CatalogTour } from "@/lib/tour-catalog";
+import { tours as staticTours } from "@/lib/tours";
+import { parsePriceThbFromLabel } from "@/lib/db/types";
 
 const BookingSheet = dynamic(
   () => import("../BookingSheet").then((mod) => mod.BookingSheet),
@@ -20,6 +23,7 @@ type BookingContextValue = {
 };
 
 const BookingContext = createContext<BookingContextValue | null>(null);
+const CatalogContext = createContext<CatalogTour[]>([]);
 
 export function useBooking() {
   const context = useContext(BookingContext);
@@ -29,10 +33,33 @@ export function useBooking() {
   return context;
 }
 
-export function BookingProvider({ children }: { children: ReactNode }) {
+export function useCatalogTours() {
+  return useContext(CatalogContext);
+}
+
+function buildStaticCatalog(): CatalogTour[] {
+  return staticTours.map((tour) => ({
+    ...tour,
+    priceThb: parsePriceThbFromLabel(tour.price),
+    availableDates: tour.demoDates.map((date) => ({
+      date,
+      spotsLeft: 20,
+      capacity: 20,
+    })),
+  }));
+}
+
+export function BookingProvider({
+  children,
+  catalogTours,
+}: {
+  children: ReactNode;
+  catalogTours?: CatalogTour[];
+}) {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingTourId, setBookingTourId] = useState<string | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  const catalog = catalogTours?.length ? catalogTours : buildStaticCatalog();
 
   const openBooking = useCallback(
     (tourId: string, trigger?: HTMLElement | null) => {
@@ -48,14 +75,16 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <BookingContext.Provider value={{ openBooking }}>
-      {children}
-      <BookingSheet
-        open={bookingOpen}
-        tourId={bookingTourId}
-        onClose={closeBooking}
-        returnFocusRef={returnFocusRef}
-      />
-    </BookingContext.Provider>
+    <CatalogContext.Provider value={catalog}>
+      <BookingContext.Provider value={{ openBooking }}>
+        {children}
+        <BookingSheet
+          open={bookingOpen}
+          tourId={bookingTourId}
+          onClose={closeBooking}
+          returnFocusRef={returnFocusRef}
+        />
+      </BookingContext.Provider>
+    </CatalogContext.Provider>
   );
 }

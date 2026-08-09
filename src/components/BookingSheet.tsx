@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { IconClose } from "./icons";
-import { getTour } from "@/lib/tours";
+import { useCatalogTours } from "@/components/booking/BookingProvider";
+import { getTourFromCatalog } from "@/lib/tour-catalog";
+import { submitBooking } from "@/lib/actions/booking";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
   validateDate,
   validateEmail,
@@ -22,13 +25,20 @@ const FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
-  const tour = tourId ? getTour(tourId) : undefined;
+  const catalog = useCatalogTours();
+  const tour = tourId ? getTourFromCatalog(catalog, tourId) : undefined;
+  const liveBooking = isSupabaseConfigured();
+  const allowedDates = tour?.demoDates ?? [];
+  const dateAvailability = tour?.availableDates ?? [];
+
   const [step, setStep] = useState<BookingStep>("tour");
   const [date, setDate] = useState("");
   const [passengers, setPassengers] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [showErrors, setShowErrors] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -39,6 +49,18 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const emailErrorId = useId();
   const continueHintId = useId();
 
+  const maxPassengers = useMemo(() => {
+    const slot = dateAvailability.find((d) => d.date === date);
+    const spots = slot?.spotsLeft ?? 6;
+    return Math.min(6, Math.max(1, spots));
+  }, [date, dateAvailability]);
+
+  useEffect(() => {
+    if (passengers > maxPassengers) {
+      setPassengers(maxPassengers);
+    }
+  }, [maxPassengers, passengers]);
+
   useEffect(() => {
     if (open && tourId) {
       setStep("date");
@@ -47,6 +69,8 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
       setName("");
       setEmail("");
       setShowErrors(false);
+      setSubmitError(null);
+      setSubmitting(false);
     }
   }, [open, tourId]);
 
@@ -120,35 +144,59 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const stepIndex = steps.indexOf(step);
 
   const dateError =
-    showErrors && step === "date" ? validateDate(date, tour?.demoDates) : null;
+    showErrors && step === "date" ? validateDate(date, allowedDates) : null;
   const nameError =
     showErrors && step === "details" ? validateName(name) : null;
   const emailError =
     showErrors && step === "details" ? validateEmail(email) : null;
 
   const canContinue = useMemo(() => {
-    if (step === "date") return !validateDate(date, tour?.demoDates);
+    if (step === "date") return !validateDate(date, allowedDates);
     if (step === "details") {
       return !validateName(name) && !validateEmail(email);
     }
     return true;
-  }, [step, date, name, email, tour?.demoDates]);
+  }, [step, date, name, email, allowedDates]);
 
   const continueHint = useMemo(() => {
     if (canContinue || step === "confirmed" || step === "payment") return null;
-    if (step === "date") return validateDate(date, tour?.demoDates);
+    if (step === "date") return validateDate(date, allowedDates);
     if (step === "details") {
       return validateName(name) ?? validateEmail(email);
     }
     return null;
-  }, [canContinue, step, date, name, email, tour?.demoDates]);
+  }, [canContinue, step, date, name, email, allowedDates]);
 
   if (!open || !tour) return null;
+
+  async function completeBooking() {
+    if (!tour) return;
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const result = await submitBooking({
+      tourId: tour.id,
+      date,
+      passengers,
+      name,
+      email,
+      allowedDates,
+    });
+
+    setSubmitting(false);
+
+    if (!result.ok) {
+      setSubmitError(result.error);
+      return;
+    }
+
+    setStep("confirmed");
+  }
 
   function next() {
     if (!tour) return;
     if (step === "date") {
-      if (validateDate(date, tour.demoDates)) {
+      if (validateDate(date, allowedDates)) {
         setShowErrors(true);
         return;
       }
@@ -165,14 +213,19 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
       setStep("payment");
       return;
     }
-    if (step === "payment") setStep("confirmed");
+    if (step === "payment") {
+      void completeBooking();
+    }
   }
 
   function back() {
     setShowErrors(false);
+    setSubmitError(null);
     if (step === "details") setStep("date");
     else if (step === "payment") setStep("details");
   }
+
+  const passengerOptions = Array.from({ length: maxPassengers }, (_, i) => i + 1);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
@@ -215,60 +268,80 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {step === "date" && (
             <div className="space-y-4">
-              <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                Demo dates only — admin will manage live availability later.
-              </p>
-              <fieldset>
-                <legend className="mb-2 text-sm font-medium text-[var(--ink)]">
-                  Departure date
-                </legend>
-                <div
-                  className="grid gap-2"
-                  role="radiogroup"
-                  aria-invalid={dateError ? true : undefined}
-                  aria-describedby={dateError ? dateErrorId : undefined}
-                >
-                  {tour.demoDates.map((d) => (
-                    <label
-                      key={d}
-                      className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-sm transition ${
-                        date === d
-                          ? "border-[var(--marker-yellow)] bg-[var(--marker-yellow)]/15 font-medium"
-                          : "border-[var(--river-blue)]/20 bg-white hover:border-[var(--river-blue)]/40"
-                      }`}
-                    >
-                      <span>
-                        {new Date(d + "T12:00:00").toLocaleDateString("en-GB", {
-                          weekday: "short",
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </span>
-                      <input
-                        type="radio"
-                        name="date"
-                        value={d}
-                        checked={date === d}
-                        onChange={() => {
-                          setDate(d);
-                          setShowErrors(false);
-                        }}
-                        className="sr-only"
-                      />
-                    </label>
-                  ))}
-                </div>
-                {dateError && (
-                  <p
-                    id={dateErrorId}
-                    role="alert"
-                    className="mt-2 text-sm text-[var(--river-blue-deep)]"
-                  >
-                    {dateError}
+              {allowedDates.length === 0 ? (
+                <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
+                  No departure dates are open for this route right now. Contact us by phone or
+                  email to enquire.
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
+                    {liveBooking
+                      ? "Choose an available departure. Seats update in real time."
+                      : "Demo dates only — connect Supabase admin for live availability."}
                   </p>
-                )}
-              </fieldset>
+                  <fieldset>
+                    <legend className="mb-2 text-sm font-medium text-[var(--ink)]">
+                      Departure date
+                    </legend>
+                    <div
+                      className="grid gap-2"
+                      role="radiogroup"
+                      aria-invalid={dateError ? true : undefined}
+                      aria-describedby={dateError ? dateErrorId : undefined}
+                    >
+                      {allowedDates.map((d) => {
+                        const slot = dateAvailability.find((s) => s.date === d);
+                        const spots = slot?.spotsLeft;
+                        return (
+                          <label
+                            key={d}
+                            className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-sm transition ${
+                              date === d
+                                ? "border-[var(--marker-yellow)] bg-[var(--marker-yellow)]/15 font-medium"
+                                : "border-[var(--river-blue)]/20 bg-white hover:border-[var(--river-blue)]/40"
+                            }`}
+                          >
+                            <span>
+                              {new Date(d + "T12:00:00").toLocaleDateString("en-GB", {
+                                weekday: "short",
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })}
+                            </span>
+                            {spots != null ? (
+                              <span className="text-xs text-[var(--ink-muted)]">
+                                {spots} left
+                              </span>
+                            ) : null}
+                            <input
+                              type="radio"
+                              name="date"
+                              value={d}
+                              checked={date === d}
+                              onChange={() => {
+                                setDate(d);
+                                setShowErrors(false);
+                              }}
+                              className="sr-only"
+                            />
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {dateError && (
+                      <p
+                        id={dateErrorId}
+                        role="alert"
+                        className="mt-2 text-sm text-[var(--river-blue-deep)]"
+                      >
+                        {dateError}
+                      </p>
+                    )}
+                  </fieldset>
+                </>
+              )}
             </div>
           )}
 
@@ -281,10 +354,12 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                 <select
                   id="passengers"
                   value={passengers}
-                  onChange={(e) => setPassengers(Math.min(6, Math.max(1, Number(e.target.value))))}
+                  onChange={(e) =>
+                    setPassengers(Math.min(maxPassengers, Math.max(1, Number(e.target.value))))
+                  }
                   className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
                 >
-                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                  {passengerOptions.map((n) => (
                     <option key={n} value={n}>
                       {n} {n === 1 ? "passenger" : "passengers"}
                     </option>
@@ -365,6 +440,11 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                   <dd className="font-medium">{passengers}</dd>
                 </div>
               </dl>
+              {submitError ? (
+                <p className="text-sm text-[var(--river-blue-deep)]" role="alert">
+                  {submitError}
+                </p>
+              ) : null}
             </div>
           )}
 
@@ -377,9 +457,19 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
               </div>
               <h3 className="text-xl font-semibold text-[var(--ink)]">Booking recorded</h3>
               <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                Placeholder confirmation — email to{" "}
-                <strong className="text-[var(--ink)]">{email}</strong> will be sent when
-                transactional email is connected.
+                {liveBooking ? (
+                  <>
+                    Your request is saved. Confirmation email to{" "}
+                    <strong className="text-[var(--ink)]">{email}</strong> will follow when
+                    transactional email is connected.
+                  </>
+                ) : (
+                  <>
+                    Placeholder confirmation — email to{" "}
+                    <strong className="text-[var(--ink)]">{email}</strong> will be sent when
+                    booking storage is connected.
+                  </>
+                )}
               </p>
             </div>
           )}
@@ -396,7 +486,8 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
               <button
                 type="button"
                 onClick={back}
-                className="min-h-11 rounded-full px-4 py-2.5 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+                disabled={submitting}
+                className="min-h-11 rounded-full px-4 py-2.5 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)] disabled:opacity-50"
               >
                 Back
               </button>
@@ -413,10 +504,21 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
               <button
                 type="button"
                 onClick={next}
+                disabled={
+                  submitting ||
+                  (step === "date" && allowedDates.length === 0) ||
+                  (step === "payment" && !liveBooking)
+                }
                 aria-describedby={continueHint ? continueHintId : undefined}
-                className="ml-auto min-h-11 flex-1 rounded-full bg-[var(--marker-yellow)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
+                className="ml-auto min-h-11 flex-1 rounded-full bg-[var(--marker-yellow)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] disabled:opacity-50"
               >
-                {step === "payment" ? "Complete booking (demo)" : "Continue"}
+                {step === "payment"
+                  ? submitting
+                    ? "Saving…"
+                    : liveBooking
+                      ? "Complete booking"
+                      : "Complete booking (demo)"
+                  : "Continue"}
               </button>
             )}
           </div>

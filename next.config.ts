@@ -8,9 +8,22 @@ const isDev = process.env.NODE_ENV === "development";
  * `unsafe-eval` is allowed only in development — React dev tooling needs it; production stays strict.
  */
 function buildContentSecurityPolicy(): string {
+  const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
+    : null;
+
   const scriptSrc = isDev
     ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
     : "script-src 'self' 'unsafe-inline'";
+
+  const connectSrc =
+    isDev && supabaseHost
+      ? `connect-src 'self' ws: wss: https://${supabaseHost} wss://${supabaseHost}`
+      : isDev
+        ? "connect-src 'self' ws: wss:"
+        : supabaseHost
+          ? `connect-src 'self' https://${supabaseHost} wss://${supabaseHost}`
+          : "connect-src 'self'";
 
   const directives = [
     "default-src 'self'",
@@ -18,7 +31,7 @@ function buildContentSecurityPolicy(): string {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
-    isDev ? "connect-src 'self' ws: wss:" : "connect-src 'self'",
+    connectSrc,
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

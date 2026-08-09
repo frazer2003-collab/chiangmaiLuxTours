@@ -2,23 +2,35 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookTourButton } from "@/components/booking/BookTourButton";
 import { IconChevron, IconMapPin, IconShield } from "@/components/icons";
-import { CONTACT, tours } from "@/lib/tours";
+import { CONTACT } from "@/lib/tours";
 import { SHARED_TOUR_INTRO } from "@/lib/types";
+import type { CatalogTour } from "@/lib/tour-catalog";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-const hubs = tours.map((tour) => ({
-  name: tour.from === "Huay Xai" ? "Huay Xai Village" : tour.from,
-  note: tour.meetingPoint,
-  price: tour.price,
-}));
+export function LandingContent({
+  catalogTours,
+}: {
+  catalogTours: CatalogTour[];
+}) {
+  const tours = catalogTours;
+  const liveDates = isSupabaseConfigured();
 
-const faqs = [
+  const hubs = tours.map((tour) => ({
+    name: tour.from === "Huay Xai" ? "Huay Xai Village" : tour.from,
+    note: tour.meetingPoint,
+    price: tour.price,
+  }));
+
+  const faqs = [
   {
     q: "What should I bring on the river journey?",
     a: "Light luggage, sun protection, passport for border checks, and cash for stops en route. The Chiang Mai route includes one overnight.",
   },
   {
     q: "Are dates flexible?",
-    a: "Demo dates are shown for layout only. Live availability will be managed in the admin area.",
+    a: liveDates
+      ? "Available departure dates are shown when you book each route. Seats are limited — choose an open date in the booking flow."
+      : "Demo dates are shown for layout only. Live availability will appear once admin is connected.",
   },
   {
     q: "Is payment secure?",
@@ -30,7 +42,6 @@ const faqs = [
   },
 ];
 
-export function LandingContent() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--river-blue)]/12 bg-[var(--chart-paper)]/92 backdrop-blur-md">
@@ -287,7 +298,12 @@ export function LandingContent() {
           <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               ["Select route", "Pick your hub — Chiang Mai, Chiang Rai, Chiang Khong, or Huay Xai."],
-              ["Choose date", "Demo dates shown until admin calendar is live."],
+              [
+                "Choose date",
+                liveDates
+                  ? "Pick an open departure from live availability."
+                  : "Demo dates shown until admin calendar is live.",
+              ],
               ["Enter details", "Passengers and email for your confirmation."],
               ["Pay online", "Placeholder checkout — no charge in v1."],
             ].map(([title, body]) => (
