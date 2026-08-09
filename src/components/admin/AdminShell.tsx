@@ -13,6 +13,7 @@ import { mapLoginError } from "@/lib/auth/login-errors";
 import { AdminSpinner } from "./AdminFeedback";
 import type { DbBooking, DbTourDate } from "@/lib/db/types";
 import { AdminLocaleProvider, useAdminLocale } from "./AdminLocaleProvider";
+import type { TranslationKey } from "./i18n";
 import { LanguageToggle } from "./LanguageToggle";
 import { BookingsTab } from "./BookingsTab";
 import { DatesTab } from "./DatesTab";
@@ -51,11 +52,13 @@ function AdminShellInner({
     });
   }
 
-  const tabs: { id: Tab; label: string; badge?: number }[] = [
-    { id: "bookings", label: tr("bookings"), badge: pendingCount || undefined },
-    { id: "dates", label: tr("dates") },
-    { id: "tours", label: tr("tours") },
+  const tabs: { id: Tab; label: string; hint: TranslationKey; badge?: number }[] = [
+    { id: "bookings", label: tr("bookings"), hint: "tabBookingsHint", badge: pendingCount || undefined },
+    { id: "dates", label: tr("dates"), hint: "tabDatesHint" },
+    { id: "tours", label: tr("tours"), hint: "tabToursHint" },
   ];
+
+  const activeTab = tabs.find((item) => item.id === tab) ?? tabs[0];
 
   return (
     <div className="chart-grid flex min-h-dvh flex-col bg-[var(--chart-paper)]">
@@ -82,37 +85,75 @@ function AdminShellInner({
       </header>
 
       <main className="mx-auto w-full max-w-lg flex-1 px-4 py-4 pb-24">
-        {tab === "bookings" ? (
-          <BookingsTab initialBookings={bookings} />
-        ) : null}
-        {tab === "dates" ? <DatesTab initialDatesByTour={datesByTour} /> : null}
-        {tab === "tours" ? <ToursTab initialPrices={prices} /> : null}
+        <div
+          className="mb-4 rounded-2xl bg-white px-4 py-3 ring-2 ring-[var(--marker-yellow)]/35 ring-offset-2 ring-offset-[var(--chart-paper)]"
+          aria-live="polite"
+        >
+          <h2 className="text-lg font-semibold text-[var(--ink)]">{activeTab.label}</h2>
+          <p className="mt-1 text-sm text-[var(--ink-muted)]">{tr(activeTab.hint)}</p>
+        </div>
+
+        <div
+          key={tab}
+          role="tabpanel"
+          id="admin-panel"
+          aria-labelledby={`admin-tab-${tab}`}
+          className="admin-tab-panel"
+        >
+          {tab === "bookings" ? (
+            <BookingsTab initialBookings={bookings} />
+          ) : null}
+          {tab === "dates" ? <DatesTab initialDatesByTour={datesByTour} /> : null}
+          {tab === "tours" ? <ToursTab initialPrices={prices} /> : null}
+        </div>
       </main>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-10 border-t border-[var(--river-blue)]/10 bg-white/95 backdrop-blur-sm"
-        aria-label="Admin sections"
+        className="fixed inset-x-0 bottom-0 z-10 border-t border-[var(--river-blue)]/15 bg-white/95 shadow-[0_-8px_24px_-12px_rgba(15,39,64,0.18)] backdrop-blur-sm"
+        aria-label={tr("adminSections")}
       >
-        <div className="mx-auto grid max-w-lg grid-cols-3 gap-1 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-          {tabs.map((item) => (
+        <div
+          className="mx-auto grid max-w-lg grid-cols-3 gap-1.5 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+          role="tablist"
+        >
+          {tabs.map((item) => {
+            const active = tab === item.id;
+            return (
             <button
               key={item.id}
               type="button"
+              role="tab"
+              id={`admin-tab-${item.id}`}
+              aria-selected={active}
+              aria-controls="admin-panel"
               onClick={() => setTab(item.id)}
-              className={`relative flex min-h-12 flex-col items-center justify-center rounded-xl px-2 text-xs font-semibold transition ${
-                tab === item.id
-                  ? "bg-[var(--river-blue)]/10 text-[var(--river-blue-deep)]"
-                  : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
+              className={`relative flex min-h-[3.25rem] flex-col items-center justify-center rounded-xl px-2 text-xs font-semibold transition duration-150 ${
+                active
+                  ? "bg-[var(--river-blue)] text-white shadow-[0_6px_16px_-6px_rgba(37,99,168,0.65)]"
+                  : "text-[var(--ink-muted)] hover:bg-[var(--river-blue)]/6 hover:text-[var(--ink)]"
               }`}
             >
+              {active ? (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-3 top-1 h-1 rounded-full bg-[var(--marker-yellow)]"
+                />
+              ) : null}
               {item.label}
               {item.badge ? (
-                <span className="absolute right-3 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--marker-yellow)] px-1 text-[10px] font-bold text-[var(--ink)]">
+                <span
+                  className={`absolute right-2 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold ${
+                    active
+                      ? "bg-[var(--marker-yellow)] text-[var(--ink)]"
+                      : "bg-[var(--marker-yellow)] text-[var(--ink)]"
+                  }`}
+                >
                   {item.badge}
                 </span>
               ) : null}
             </button>
-          ))}
+            );
+          })}
         </div>
       </nav>
     </div>

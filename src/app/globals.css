@@ -23,6 +23,22 @@
   html {
     scroll-behavior: smooth;
   }
+
+  .admin-tab-panel {
+    animation: admin-tab-enter 180ms ease-out;
+  }
+
+  @keyframes admin-tab-enter {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 body {

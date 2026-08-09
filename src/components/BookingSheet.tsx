@@ -9,8 +9,15 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
   validateDate,
   validateEmail,
-  validateName,
+  validatePassengerForms,
+  formatGuestFullName,
 } from "@/lib/booking-validation";
+import {
+  emptyPassengerForm,
+  resizePassengerForms,
+  type PassengerFormState,
+} from "@/lib/booking-passengers";
+import { PassengerIdentityFields } from "@/components/PassengerIdentityFields";
 import type { BookingStep } from "@/lib/types";
 
 type Props = {
@@ -34,7 +41,9 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const [step, setStep] = useState<BookingStep>("tour");
   const [date, setDate] = useState("");
   const [passengers, setPassengers] = useState(1);
-  const [name, setName] = useState("");
+  const [passengerForms, setPassengerForms] = useState<PassengerFormState[]>([
+    emptyPassengerForm(),
+  ]);
   const [email, setEmail] = useState("");
   const [showErrors, setShowErrors] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -44,8 +53,11 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
+  const fieldClass =
+    "w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]";
+
+  const maxDob = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const dateErrorId = useId();
-  const nameErrorId = useId();
   const emailErrorId = useId();
   const continueHintId = useId();
 
@@ -62,11 +74,15 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   }, [maxPassengers, passengers]);
 
   useEffect(() => {
+    setPassengerForms((prev) => resizePassengerForms(prev, passengers));
+  }, [passengers]);
+
+  useEffect(() => {
     if (open && tourId) {
       setStep("date");
       setDate("");
       setPassengers(1);
-      setName("");
+      setPassengerForms([emptyPassengerForm()]);
       setEmail("");
       setShowErrors(false);
       setSubmitError(null);
@@ -143,29 +159,29 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
 
   const stepIndex = steps.indexOf(step);
 
-  const dateError =
-    showErrors && step === "date" ? validateDate(date, allowedDates) : null;
-  const nameError =
-    showErrors && step === "details" ? validateName(name) : null;
+  const detailsValidationError = useMemo(
+    () => validatePassengerForms(passengerForms, passengers, email),
+    [passengerForms, passengers, email],
+  );
+
   const emailError =
     showErrors && step === "details" ? validateEmail(email) : null;
 
   const canContinue = useMemo(() => {
     if (step === "date") return !validateDate(date, allowedDates);
-    if (step === "details") {
-      return !validateName(name) && !validateEmail(email);
-    }
+    if (step === "details") return !detailsValidationError;
     return true;
-  }, [step, date, name, email, allowedDates]);
+  }, [step, date, allowedDates, detailsValidationError]);
 
   const continueHint = useMemo(() => {
     if (canContinue || step === "confirmed" || step === "payment") return null;
     if (step === "date") return validateDate(date, allowedDates);
-    if (step === "details") {
-      return validateName(name) ?? validateEmail(email);
-    }
+    if (step === "details") return detailsValidationError;
     return null;
-  }, [canContinue, step, date, name, email, allowedDates]);
+  }, [canContinue, step, date, allowedDates, detailsValidationError]);
+
+  const dateError =
+    showErrors && step === "date" ? validateDate(date, allowedDates) : null;
 
   if (!open || !tour) return null;
 
@@ -178,7 +194,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
       tourId: tour.id,
       date,
       passengers,
-      name,
+      passengerForms,
       email,
       allowedDates,
     });
@@ -205,7 +221,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
       return;
     }
     if (step === "details") {
-      if (validateName(name) || validateEmail(email)) {
+      if (detailsValidationError) {
         setShowErrors(true);
         return;
       }
@@ -354,10 +370,15 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                 <select
                   id="passengers"
                   value={passengers}
-                  onChange={(e) =>
-                    setPassengers(Math.min(maxPassengers, Math.max(1, Number(e.target.value))))
-                  }
-                  className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+                  onChange={(e) => {
+                    const count = Math.min(
+                      maxPassengers,
+                      Math.max(1, Number(e.target.value)),
+                    );
+                    setPassengers(count);
+                    if (showErrors) setShowErrors(false);
+                  }}
+                  className={fieldClass}
                 >
                   {passengerOptions.map((n) => (
                     <option key={n} value={n}>
@@ -366,30 +387,39 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                   ))}
                 </select>
               </div>
-              <div>
-                <label htmlFor="name" className="mb-1.5 block text-sm font-medium">
-                  Full name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  autoComplete="name"
-                  maxLength={100}
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    if (showErrors) setShowErrors(false);
-                  }}
-                  aria-invalid={nameError ? true : undefined}
-                  aria-describedby={nameError ? nameErrorId : undefined}
-                  className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
-                />
-                {nameError && (
-                  <p id={nameErrorId} role="alert" className="mt-1.5 text-sm text-[var(--river-blue-deep)]">
-                    {nameError}
+
+              <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
+                Enter passport details for every passenger. Required for border manifest.
+              </p>
+
+              {passengerForms.slice(0, passengers).map((passenger, index) => (
+                <div
+                  key={index}
+                  className="rounded-xl border border-[var(--river-blue)]/15 bg-white/70 p-4"
+                >
+                  <p className="text-sm font-semibold text-[var(--ink)]">
+                    Passenger {index + 1}
+                    {index === 0 ? " · Lead guest" : ""}
                   </p>
-                )}
-              </div>
+                  <div className="mt-4">
+                    <PassengerIdentityFields
+                      index={index}
+                      value={passenger}
+                      maxDob={maxDob}
+                      showErrors={showErrors}
+                      onChange={(next) => {
+                        setPassengerForms((prev) => {
+                          const copy = [...prev];
+                          copy[index] = next;
+                          return copy;
+                        });
+                        if (showErrors) setShowErrors(false);
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+
               <div>
                 <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
                   Email for confirmation
@@ -406,13 +436,17 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                   }}
                   aria-invalid={emailError ? true : undefined}
                   aria-describedby={emailError ? emailErrorId : undefined}
-                  className="w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+                  className={fieldClass}
                 />
-                {emailError && (
-                  <p id={emailErrorId} role="alert" className="mt-1.5 text-sm text-[var(--river-blue-deep)]">
+                {emailError ? (
+                  <p
+                    id={emailErrorId}
+                    role="alert"
+                    className="mt-1.5 text-sm text-[var(--river-blue-deep)]"
+                  >
                     {emailError}
                   </p>
-                )}
+                ) : null}
               </div>
             </div>
           )}
@@ -439,6 +473,14 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                   <dt className="text-[var(--ink-muted)]">Passengers</dt>
                   <dd className="font-medium">{passengers}</dd>
                 </div>
+                {passengerForms.slice(0, passengers).map((passenger, index) => (
+                  <div key={index} className="flex justify-between gap-4">
+                    <dt className="text-[var(--ink-muted)]">Passenger {index + 1}</dt>
+                    <dd className="text-right font-medium">
+                      {formatGuestFullName(passenger.familyName, passenger.givenName) || "—"}
+                    </dd>
+                  </div>
+                ))}
               </dl>
               {submitError ? (
                 <p className="text-sm text-[var(--river-blue-deep)]" role="alert">

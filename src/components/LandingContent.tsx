@@ -304,7 +304,7 @@ export function LandingContent({
                   ? "Pick an open departure from live availability."
                   : "Demo dates shown until admin calendar is live.",
               ],
-              ["Enter details", "Passengers and email for your confirmation."],
+              ["Enter details", "Passengers, ID details for every traveller, and contact email."],
               ["Pay online", "Placeholder checkout — no charge in v1."],
             ].map(([title, body]) => (
               <li key={title} className="rounded-2xl border border-[var(--river-blue)]/15 bg-white p-5">

@@ -17,19 +17,13 @@ import {
   AdminStatusBanner,
 } from "./AdminFeedback";
 import { AdminConfirmDialog } from "./AdminConfirmDialog";
+import { AdminDateInput } from "./AdminDateInput";
+import { formatAdminDateRow } from "@/lib/admin-date-input";
 
 type DateConfirm =
   | { kind: "close"; dateId: string }
   | { kind: "remove"; dateId: string }
   | null;
-
-function formatDate(iso: string, locale: string) {
-  return new Date(iso + "T12:00:00").toLocaleDateString(locale, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-}
 
 export function DatesTab({
   initialDatesByTour,
@@ -72,6 +66,10 @@ export function DatesTab({
   function handleAddDate() {
     setError(null);
     setSuccess(null);
+    if (!newDate) {
+      setError(tr("dateInvalid"));
+      return;
+    }
     setAction("add");
     startTransition(async () => {
       const result = await addTourDate({
@@ -170,11 +168,10 @@ export function DatesTab({
       <div className="rounded-2xl bg-white p-4 ring-1 ring-[var(--river-blue)]/10">
         <p className="text-sm font-medium text-[var(--ink)]">{tr("addDate")}</p>
         <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-          <input
-            type="date"
+          <AdminDateInput
             value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            className="min-h-11 w-full rounded-xl border border-[var(--river-blue)]/20 px-3 text-base"
+            onChange={setNewDate}
+            disabled={pending}
           />
           <input
             type="number"
@@ -222,7 +219,7 @@ export function DatesTab({
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-semibold text-[var(--ink)]">
-                        {formatDate(row.date, localeTag)}
+                        {formatAdminDateRow(row.date, localeTag)}
                       </p>
                       <p className="text-sm text-[var(--ink-muted)]">
                         {row.booked_count} / {row.capacity} {tr("booked")}

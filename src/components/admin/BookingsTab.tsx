@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { tours } from "@/lib/tours";
-import type { DbBooking, BookingStatus } from "@/lib/db/types";
+import type { DbBooking, BookingStatus, GuestGender } from "@/lib/db/types";
+import { getBookingPassengers } from "@/lib/booking-passengers";
 import { fetchAdminBookings, updateBooking, markBookingRefunded } from "@/lib/actions/admin";
 import { useAdminLocale } from "./AdminLocaleProvider";
 import { StatusChip } from "./StatusChip";
@@ -27,6 +28,16 @@ function formatDisplayDate(iso: string, locale: string) {
 
 function tourName(id: string) {
   return tours.find((t) => t.id === id)?.name ?? id;
+}
+
+function adminGenderLabel(
+  tr: (key: import("./i18n").TranslationKey) => string,
+  gender: GuestGender | undefined,
+): string {
+  if (gender === "male") return tr("genderMale");
+  if (gender === "female") return tr("genderFemale");
+  if (gender === "na") return tr("genderNa");
+  return "—";
 }
 
 export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] }) {
@@ -275,6 +286,63 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
                   </dd>
                 </div>
               </dl>
+
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-[var(--ink)]">{tr("guestDetails")}</p>
+                {getBookingPassengers(selected).map((passenger, index) => (
+                  <div
+                    key={index}
+                    className="rounded-xl bg-white p-3 ring-1 ring-[var(--river-blue)]/10"
+                  >
+                    <p className="mb-3 text-sm font-semibold text-[var(--ink)]">
+                      {tr("passengerNumber").replace("{n}", String(index + 1))}
+                      {index === 0 ? " · Lead" : ""}
+                    </p>
+                    <dl className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <dt className="text-[var(--ink-muted)]">{tr("familyName")}</dt>
+                        <dd className="font-medium">{passenger.family_name || "—"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-[var(--ink-muted)]">{tr("givenName")}</dt>
+                        <dd className="font-medium">{passenger.given_name || "—"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-[var(--ink-muted)]">{tr("gender")}</dt>
+                        <dd className="font-medium">
+                          {adminGenderLabel(tr, passenger.gender)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-[var(--ink-muted)]">{tr("nationality")}</dt>
+                        <dd className="font-medium">{passenger.nationality || "—"}</dd>
+                      </div>
+                      <div className="col-span-2">
+                        <dt className="text-[var(--ink-muted)]">{tr("idNumber")}</dt>
+                        <dd className="font-medium break-all">{passenger.id_number || "—"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-[var(--ink-muted)]">{tr("dateOfBirth")}</dt>
+                        <dd className="font-medium">
+                          {passenger.date_of_birth
+                            ? formatDisplayDate(passenger.date_of_birth, localeTag)
+                            : "—"}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                ))}
+                <dl className="grid grid-cols-2 gap-3 rounded-xl bg-white p-3 text-sm ring-1 ring-[var(--river-blue)]/10">
+                  <div>
+                    <dt className="text-[var(--ink-muted)]">{tr("passengers")}</dt>
+                    <dd className="font-medium">{selected.passengers}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[var(--ink-muted)]">{tr("email")}</dt>
+                    <dd className="font-medium break-all">{selected.guest_email}</dd>
+                  </div>
+                </dl>
+              </div>
 
               <div>
                 <p className="mb-2 text-sm font-medium">{tr("status")}</p>

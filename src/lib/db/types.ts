@@ -1,4 +1,14 @@
 export type BookingStatus = "pending" | "confirmed" | "cancelled" | "refunded";
+export type GuestGender = "male" | "female" | "na";
+
+export type StoredPassengerDetail = {
+  family_name: string;
+  given_name: string;
+  gender: GuestGender;
+  id_number: string;
+  nationality: string;
+  date_of_birth: string;
+};
 
 export type DbTour = {
   id: string;
@@ -23,6 +33,13 @@ export type DbBooking = {
   passengers: number;
   guest_name: string;
   guest_email: string;
+  guest_family_name?: string;
+  guest_given_name?: string;
+  guest_gender?: GuestGender;
+  guest_id_number?: string;
+  guest_nationality?: string;
+  guest_date_of_birth?: string | null;
+  passengers_detail?: StoredPassengerDetail[];
   status: BookingStatus;
   internal_notes: string;
   refund_note: string;
