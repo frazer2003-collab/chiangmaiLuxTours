@@ -100,3 +100,15 @@ export function toStoredPassengerDetail(
     date_of_birth: form.dateOfBirth,
   };
 }
+
+/** Stub rows for additional passengers when manifest is deferred. */
+export function stubPassengerDetail(index: number): StoredPassengerDetail {
+  return {
+    family_name: "Passenger",
+    given_name: String(index + 1),
+    gender: "na",
+    id_number: "",
+    nationality: "",
+    date_of_birth: "",
+  };
+}

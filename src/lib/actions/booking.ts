@@ -4,11 +4,10 @@ import {
   isGuestGender,
   normalizeEmail,
   normalizeGuestText,
-  normalizeIdNumber,
+  validateLeadGuestBooking,
   validateDate,
-  validatePassengerForms,
 } from "@/lib/booking-validation";
-import { toStoredPassengerDetail } from "@/lib/booking-passengers";
+import { stubPassengerDetail, toStoredPassengerDetail } from "@/lib/booking-passengers";
 import type { PassengerFormState } from "@/lib/booking-passengers";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -21,7 +20,7 @@ export async function submitBooking(input: {
   tourId: string;
   date: string;
   passengers: number;
-  passengerForms: PassengerFormState[];
+  leadGuest: { familyName: string; givenName: string };
   email: string;
   allowedDates: string[];
 }): Promise<SubmitBookingResult> {
@@ -30,25 +29,28 @@ export async function submitBooking(input: {
 
   const passengerCount = Math.min(12, Math.max(1, Math.floor(input.passengers)));
 
-  const validationError = validatePassengerForms(
-    input.passengerForms,
-    passengerCount,
-    input.email,
-  );
+  const validationError = validateLeadGuestBooking(input.leadGuest, input.email);
   if (validationError) return { ok: false, error: validationError };
 
-  const passengersDetail = input.passengerForms.slice(0, passengerCount).map((form) => {
-    if (!isGuestGender(form.gender)) {
-      throw new Error("invalid gender");
-    }
-    return toStoredPassengerDetail(form, form.gender);
-  });
+  const leadForm: PassengerFormState = {
+    familyName: input.leadGuest.familyName,
+    givenName: input.leadGuest.givenName,
+    gender: "na",
+    idNumber: "",
+    nationality: "",
+    dateOfBirth: "",
+  };
 
-  for (const row of passengersDetail) {
-    row.family_name = normalizeGuestText(row.family_name, 80);
-    row.given_name = normalizeGuestText(row.given_name, 80);
-    row.id_number = normalizeIdNumber(row.id_number);
-    row.nationality = normalizeGuestText(row.nationality, 60);
+  const passengersDetail = [
+    toStoredPassengerDetail(leadForm, "na"),
+    ...Array.from({ length: passengerCount - 1 }, (_, i) => stubPassengerDetail(i + 1)),
+  ];
+
+  passengersDetail[0].family_name = normalizeGuestText(passengersDetail[0].family_name, 80);
+  passengersDetail[0].given_name = normalizeGuestText(passengersDetail[0].given_name, 80);
+
+  if (!isGuestGender(passengersDetail[0].gender)) {
+    passengersDetail[0].gender = "na";
   }
 
   const guestEmail = normalizeEmail(input.email);
@@ -85,7 +87,7 @@ export async function submitBooking(input: {
         error.message.includes("invalid_passengers_detail") ||
         error.message.includes("invalid_passenger_identity")
       ) {
-        return { ok: false, error: "Check every passenger's details and try again." };
+        return { ok: false, error: "Check the lead guest name and try again." };
       }
       return { ok: false, error: "Could not save booking. Please try again." };
     }

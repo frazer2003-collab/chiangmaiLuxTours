@@ -175,6 +175,17 @@ export function validatePassengerForms(
   return null;
 }
 
+/** v1 checkout: lead guest name + email only; passport details collected later. */
+export function validateLeadGuestBooking(
+  lead: { familyName: string; givenName: string },
+  email: string,
+): string | null {
+  const nameError =
+    validateFamilyName(lead.familyName) ?? validateGivenName(lead.givenName);
+  if (nameError) return nameError;
+  return validateEmail(email);
+}
+
 export function normalizeEmail(email: string): string {
   return sanitizeText(email, 254).toLowerCase();
 }

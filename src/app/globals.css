@@ -54,6 +54,54 @@ body {
   background-size: 24px 24px;
 }
 
+/* Mobile river chart — vertical waypoints beside route carousel */
+.mobile-river-chart {
+  width: 5.75rem;
+  padding-top: 0.25rem;
+}
+
+.mobile-river-chart__leg {
+  position: relative;
+}
+
+.mobile-river-chart__waypoint {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.mobile-river-chart__line {
+  margin-left: 1.125rem;
+  height: 0.75rem;
+  width: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--river-blue) 35%, transparent),
+    color-mix(in srgb, var(--river-blue) 18%, transparent)
+  );
+}
+
+.mobile-river-chart__destination {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+  padding-left: 0.125rem;
+}
+
+.river-routes-carousel {
+  scroll-padding-inline: 0.25rem;
+}
+
+@media (pointer: coarse) {
+  .river-routes-carousel {
+    scroll-snap-type: x mandatory;
+  }
+}
+
 ::selection {
   background: color-mix(in srgb, var(--marker-yellow) 55%, white);
 }

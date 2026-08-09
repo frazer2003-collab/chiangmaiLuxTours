@@ -9,15 +9,14 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
   validateDate,
   validateEmail,
-  validatePassengerForms,
+  validateLeadGuestBooking,
+  validateFamilyName,
+  validateGivenName,
   formatGuestFullName,
 } from "@/lib/booking-validation";
 import {
-  emptyPassengerForm,
-  resizePassengerForms,
   type PassengerFormState,
 } from "@/lib/booking-passengers";
-import { PassengerIdentityFields } from "@/components/PassengerIdentityFields";
 import type { BookingStep } from "@/lib/types";
 
 type Props = {
@@ -41,9 +40,10 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const [step, setStep] = useState<BookingStep>("tour");
   const [date, setDate] = useState("");
   const [passengers, setPassengers] = useState(1);
-  const [passengerForms, setPassengerForms] = useState<PassengerFormState[]>([
-    emptyPassengerForm(),
-  ]);
+  const [leadGuest, setLeadGuest] = useState<Pick<PassengerFormState, "familyName" | "givenName">>({
+    familyName: "",
+    givenName: "",
+  });
   const [email, setEmail] = useState("");
   const [showErrors, setShowErrors] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -58,6 +58,8 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
 
   const dateErrorId = useId();
   const emailErrorId = useId();
+  const familyErrorId = useId();
+  const givenErrorId = useId();
   const continueHintId = useId();
 
   const maxPassengers = useMemo(() => {
@@ -73,15 +75,11 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   }, [maxPassengers, passengers]);
 
   useEffect(() => {
-    setPassengerForms((prev) => resizePassengerForms(prev, passengers));
-  }, [passengers]);
-
-  useEffect(() => {
     if (open && tourId) {
       setStep("date");
       setDate("");
       setPassengers(1);
-      setPassengerForms([emptyPassengerForm()]);
+      setLeadGuest({ familyName: "", givenName: "" });
       setEmail("");
       setShowErrors(false);
       setSubmitError(null);
@@ -159,12 +157,18 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const stepIndex = steps.indexOf(step);
 
   const detailsValidationError = useMemo(
-    () => validatePassengerForms(passengerForms, passengers, email),
-    [passengerForms, passengers, email],
+    () => validateLeadGuestBooking(leadGuest, email),
+    [leadGuest, email],
   );
 
   const emailError =
     showErrors && step === "details" ? validateEmail(email) : null;
+
+  const familyError =
+    showErrors && step === "details" ? validateFamilyName(leadGuest.familyName) : null;
+
+  const givenError =
+    showErrors && step === "details" ? validateGivenName(leadGuest.givenName) : null;
 
   const canContinue = useMemo(() => {
     if (step === "date") return !validateDate(date, allowedDates);
@@ -193,7 +197,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
       tourId: tour.id,
       date,
       passengers,
-      passengerForms,
+      leadGuest,
       email,
       allowedDates,
     });
@@ -388,35 +392,66 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
               </div>
 
               <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                Enter passport details for every passenger. Required for border manifest.
+                Lead guest name and email for confirmation. Passport details for all passengers
+                are collected before departure.
               </p>
 
-              {passengerForms.slice(0, passengers).map((passenger, index) => (
-                <div
-                  key={index}
-                  className="rounded-xl border border-[var(--river-blue)]/15 bg-white/70 p-4"
-                >
-                  <p className="text-sm font-semibold text-[var(--ink)]">
-                    Passenger {index + 1}
-                    {index === 0 ? " · Lead guest" : ""}
-                  </p>
-                  <div className="mt-4">
-                    <PassengerIdentityFields
-                      index={index}
-                      value={passenger}
-                      showErrors={showErrors}
-                      onChange={(next) => {
-                        setPassengerForms((prev) => {
-                          const copy = [...prev];
-                          copy[index] = next;
-                          return copy;
-                        });
-                        if (showErrors) setShowErrors(false);
-                      }}
-                    />
-                  </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="lead-family" className="mb-1.5 block text-sm font-medium">
+                    Family name
+                  </label>
+                  <input
+                    id="lead-family"
+                    type="text"
+                    autoComplete="family-name"
+                    value={leadGuest.familyName}
+                    onChange={(e) => {
+                      setLeadGuest((prev) => ({ ...prev, familyName: e.target.value }));
+                      if (showErrors) setShowErrors(false);
+                    }}
+                    aria-invalid={familyError ? true : undefined}
+                    aria-describedby={familyError ? familyErrorId : undefined}
+                    className={fieldClass}
+                  />
+                  {familyError ? (
+                    <p
+                      id={familyErrorId}
+                      role="alert"
+                      className="mt-1.5 text-sm text-[var(--river-blue-deep)]"
+                    >
+                      {familyError}
+                    </p>
+                  ) : null}
                 </div>
-              ))}
+                <div>
+                  <label htmlFor="lead-given" className="mb-1.5 block text-sm font-medium">
+                    Given name
+                  </label>
+                  <input
+                    id="lead-given"
+                    type="text"
+                    autoComplete="given-name"
+                    value={leadGuest.givenName}
+                    onChange={(e) => {
+                      setLeadGuest((prev) => ({ ...prev, givenName: e.target.value }));
+                      if (showErrors) setShowErrors(false);
+                    }}
+                    aria-invalid={givenError ? true : undefined}
+                    aria-describedby={givenError ? givenErrorId : undefined}
+                    className={fieldClass}
+                  />
+                  {givenError ? (
+                    <p
+                      id={givenErrorId}
+                      role="alert"
+                      className="mt-1.5 text-sm text-[var(--river-blue-deep)]"
+                    >
+                      {givenError}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
 
               <div>
                 <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
@@ -465,20 +500,26 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-[var(--ink-muted)]">Date</dt>
-                  <dd className="font-medium">{date}</dd>
+                  <dd className="font-medium">
+                    {date
+                      ? new Date(date + "T12:00:00").toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "—"}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-[var(--ink-muted)]">Passengers</dt>
                   <dd className="font-medium">{passengers}</dd>
                 </div>
-                {passengerForms.slice(0, passengers).map((passenger, index) => (
-                  <div key={index} className="flex justify-between gap-4">
-                    <dt className="text-[var(--ink-muted)]">Passenger {index + 1}</dt>
-                    <dd className="text-right font-medium">
-                      {formatGuestFullName(passenger.familyName, passenger.givenName) || "—"}
-                    </dd>
-                  </div>
-                ))}
+                <div className="flex justify-between gap-4">
+                  <dt className="text-[var(--ink-muted)]">Lead guest</dt>
+                  <dd className="text-right font-medium">
+                    {formatGuestFullName(leadGuest.familyName, leadGuest.givenName) || "—"}
+                  </dd>
+                </div>
               </dl>
               {submitError ? (
                 <p className="text-sm text-[var(--river-blue-deep)]" role="alert">

@@ -5,7 +5,7 @@ import { useBooking } from "./BookingProvider";
 type Props = {
   tourId: string;
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 };
 
 export function BookTourButton({ tourId, className, children }: Props) {
@@ -15,7 +15,10 @@ export function BookTourButton({ tourId, className, children }: Props) {
     <button
       type="button"
       className={className}
-      onClick={(event) => openBooking(tourId, event.currentTarget)}
+      onClick={(event) => {
+        event.stopPropagation();
+        openBooking(tourId, event.currentTarget);
+      }}
     >
       {children}
     </button>
