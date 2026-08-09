@@ -56,7 +56,6 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const fieldClass =
     "w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]";
 
-  const maxDob = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const dateErrorId = useId();
   const emailErrorId = useId();
   const continueHintId = useId();
@@ -405,7 +404,6 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                     <PassengerIdentityFields
                       index={index}
                       value={passenger}
-                      maxDob={maxDob}
                       showErrors={showErrors}
                       onChange={(next) => {
                         setPassengerForms((prev) => {

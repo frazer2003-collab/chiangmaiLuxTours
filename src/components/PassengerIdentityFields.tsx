@@ -11,6 +11,7 @@ import {
 } from "@/lib/booking-validation";
 import type { PassengerFormState } from "@/lib/booking-passengers";
 import type { GuestGender } from "@/lib/db/types";
+import { DdMmYyDateInput } from "@/components/DdMmYyDateInput";
 
 const fieldClass =
   "w-full rounded-xl border border-[var(--river-blue)]/25 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]";
@@ -18,7 +19,6 @@ const fieldClass =
 type Props = {
   index: number;
   value: PassengerFormState;
-  maxDob: string;
   showErrors: boolean;
   onChange: (next: PassengerFormState) => void;
 };
@@ -26,7 +26,6 @@ type Props = {
 export function PassengerIdentityFields({
   index,
   value,
-  maxDob,
   showErrors,
   onChange,
 }: Props) {
@@ -180,14 +179,12 @@ export function PassengerIdentityFields({
         <label htmlFor={`${prefix}-dob`} className="mb-1.5 block text-sm font-medium">
           Date of birth
         </label>
-        <input
+        <DdMmYyDateInput
           id={`${prefix}-dob`}
-          type="date"
-          max={maxDob}
           value={value.dateOfBirth}
-          onChange={(e) => patch({ dateOfBirth: e.target.value })}
-          aria-invalid={errors.dateOfBirth ? true : undefined}
-          className={fieldClass}
+          onChange={(iso) => patch({ dateOfBirth: iso })}
+          placeholder="DD/MM/YY"
+          hint="Day / month / year — e.g. 15/03/85"
         />
         {errors.dateOfBirth ? (
           <p role="alert" className="mt-1.5 text-sm text-[var(--river-blue-deep)]">

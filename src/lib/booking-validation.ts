@@ -60,10 +60,10 @@ export function validateNationality(nationality: string): string | null {
 
 export function validateDateOfBirth(dob: string): string | null {
   if (!dob) {
-    return "Enter your date of birth.";
+    return "Enter your date of birth as DD/MM/YY.";
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
-    return "Enter a valid date of birth.";
+    return "Enter a valid date of birth as DD/MM/YY.";
   }
 
   const [year, month, day] = dob.split("-").map(Number);
