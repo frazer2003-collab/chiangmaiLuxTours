@@ -7,6 +7,8 @@ import { isStripeConfigured, getSiteUrl, thbToStripeAmount } from "@/lib/stripe/
 import { getStripe } from "@/lib/stripe/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
+import type { PassengerFormState } from "@/lib/booking-passengers";
+
 export type StartCheckoutResult =
   | { ok: true; checkoutUrl: string }
   | { ok: false; error: string };
@@ -15,7 +17,7 @@ export async function startStripeCheckout(input: {
   tourId: string;
   date: string;
   passengers: number;
-  leadGuest: { familyName: string; givenName: string };
+  passengerForms: PassengerFormState[];
   email: string;
   allowedDates: string[];
 }): Promise<StartCheckoutResult> {

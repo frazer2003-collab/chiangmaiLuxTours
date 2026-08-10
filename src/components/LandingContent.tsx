@@ -125,7 +125,7 @@ export function LandingContent({
                   ? "Pick an open departure from live availability."
                   : "Demo dates shown until admin calendar is live.",
               ],
-              ["Enter details", "Passenger count, lead guest name, and email."],
+              ["Enter details", "Passport details for every passenger, plus confirmation email."],
               ["Pay online", stripePay ? "Card, Apple Pay, or PromptPay via Stripe Checkout." : "Placeholder checkout until Stripe is connected."],
             ].map(([title, body]) => (
               <li key={title} className="rounded-2xl border border-[var(--river-blue)]/15 bg-white p-5">

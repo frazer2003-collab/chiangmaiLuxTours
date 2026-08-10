@@ -4,10 +4,11 @@ import {
   isGuestGender,
   normalizeEmail,
   normalizeGuestText,
-  validateLeadGuestBooking,
+  normalizeIdNumber,
   validateDate,
+  validatePassengerForms,
 } from "@/lib/booking-validation";
-import { stubPassengerDetail, toStoredPassengerDetail } from "@/lib/booking-passengers";
+import { toStoredPassengerDetail } from "@/lib/booking-passengers";
 import type { PassengerFormState } from "@/lib/booking-passengers";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -16,11 +17,34 @@ export type SubmitBookingResult =
   | { ok: true; bookingId: string }
   | { ok: false; error: string };
 
+function mapBookingRpcError(message: string): string | null {
+  if (message.includes("date_not_available")) {
+    return "That date is no longer available.";
+  }
+  if (message.includes("not_enough_capacity")) {
+    return "Not enough seats left for that date. Choose another date or fewer passengers.";
+  }
+  if (
+    message.includes("invalid_passengers_detail") ||
+    message.includes("invalid_passenger_identity")
+  ) {
+    return "Check every passenger's details and try again.";
+  }
+  if (
+    message.includes("Could not find the function") ||
+    message.includes("does not exist") ||
+    message.includes("PGRST202")
+  ) {
+    return "Booking database is out of date. Run Supabase migrations through 20260809120000_booking_all_passengers.sql in the SQL editor.";
+  }
+  return null;
+}
+
 export async function submitBooking(input: {
   tourId: string;
   date: string;
   passengers: number;
-  leadGuest: { familyName: string; givenName: string };
+  passengerForms: PassengerFormState[];
   email: string;
   allowedDates: string[];
 }): Promise<SubmitBookingResult> {
@@ -29,28 +53,25 @@ export async function submitBooking(input: {
 
   const passengerCount = Math.min(12, Math.max(1, Math.floor(input.passengers)));
 
-  const validationError = validateLeadGuestBooking(input.leadGuest, input.email);
+  const validationError = validatePassengerForms(
+    input.passengerForms,
+    passengerCount,
+    input.email,
+  );
   if (validationError) return { ok: false, error: validationError };
 
-  const leadForm: PassengerFormState = {
-    familyName: input.leadGuest.familyName,
-    givenName: input.leadGuest.givenName,
-    gender: "na",
-    idNumber: "",
-    nationality: "",
-    dateOfBirth: "",
-  };
+  const passengersDetail = input.passengerForms.slice(0, passengerCount).map((form) => {
+    if (!isGuestGender(form.gender)) {
+      throw new Error("invalid gender");
+    }
+    return toStoredPassengerDetail(form, form.gender);
+  });
 
-  const passengersDetail = [
-    toStoredPassengerDetail(leadForm, "na"),
-    ...Array.from({ length: passengerCount - 1 }, (_, i) => stubPassengerDetail(i + 1)),
-  ];
-
-  passengersDetail[0].family_name = normalizeGuestText(passengersDetail[0].family_name, 80);
-  passengersDetail[0].given_name = normalizeGuestText(passengersDetail[0].given_name, 80);
-
-  if (!isGuestGender(passengersDetail[0].gender)) {
-    passengersDetail[0].gender = "na";
+  for (const row of passengersDetail) {
+    row.family_name = normalizeGuestText(row.family_name, 80);
+    row.given_name = normalizeGuestText(row.given_name, 80);
+    row.id_number = normalizeIdNumber(row.id_number);
+    row.nationality = normalizeGuestText(row.nationality, 60);
   }
 
   const guestEmail = normalizeEmail(input.email);
@@ -74,26 +95,26 @@ export async function submitBooking(input: {
     });
 
     if (error) {
-      if (error.message.includes("date_not_available")) {
-        return { ok: false, error: "That date is no longer available." };
-      }
-      if (error.message.includes("not_enough_capacity")) {
-        return {
-          ok: false,
-          error: "Not enough seats left for that date. Choose another date or fewer passengers.",
-        };
-      }
-      if (
-        error.message.includes("invalid_passengers_detail") ||
-        error.message.includes("invalid_passenger_identity")
-      ) {
-        return { ok: false, error: "Check the lead guest name and try again." };
-      }
+      console.error("create_booking RPC failed:", error.message, error.code);
+      return {
+        ok: false,
+        error: mapBookingRpcError(error.message) ?? "Could not save booking. Please try again.",
+      };
+    }
+
+    if (data == null) {
       return { ok: false, error: "Could not save booking. Please try again." };
     }
 
     return { ok: true, bookingId: String(data) };
-  } catch {
+  } catch (error) {
+    console.error("submitBooking error:", error);
+    if (error instanceof Error && error.message.includes("Supabase service role")) {
+      return {
+        ok: false,
+        error: "Live booking is not configured yet. Contact us by phone or email to reserve.",
+      };
+    }
     return { ok: false, error: "Could not save booking. Please try again." };
   }
 }
