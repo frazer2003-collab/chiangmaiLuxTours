@@ -5,7 +5,10 @@ import { IconClose } from "./icons";
 import { useCatalogTours } from "@/components/booking/BookingProvider";
 import { getTourFromCatalog } from "@/lib/tour-catalog";
 import { submitBooking } from "@/lib/actions/booking";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { startStripeCheckout } from "@/lib/actions/checkout";
+import { isSupabasePublicConfigured } from "@/lib/supabase/env";
+import { isStripePublicConfigured } from "@/lib/stripe/env";
+import { formatThbTotal } from "@/lib/stripe/env";
 import {
   validateDate,
   validateEmail,
@@ -33,7 +36,8 @@ const FOCUSABLE_SELECTOR =
 export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const catalog = useCatalogTours();
   const tour = tourId ? getTourFromCatalog(catalog, tourId) : undefined;
-  const liveBooking = isSupabaseConfigured();
+  const canBookOnline = isSupabasePublicConfigured();
+  const canPayOnline = isStripePublicConfigured();
   const allowedDates = tour?.demoDates ?? [];
   const dateAvailability = tour?.availableDates ?? [];
 
@@ -193,6 +197,26 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
     setSubmitting(true);
     setSubmitError(null);
 
+    if (canPayOnline) {
+      const result = await startStripeCheckout({
+        tourId: tour.id,
+        date,
+        passengers,
+        leadGuest,
+        email,
+        allowedDates,
+      });
+
+      if (!result.ok) {
+        setSubmitting(false);
+        setSubmitError(result.error);
+        return;
+      }
+
+      window.location.href = result.checkoutUrl;
+      return;
+    }
+
     const result = await submitBooking({
       tourId: tour.id,
       date,
@@ -295,7 +319,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
               ) : (
                 <>
                   <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                    {liveBooking
+                    {canBookOnline
                       ? "Choose an available departure. Seats update in real time."
                       : "Demo dates only — connect Supabase admin for live availability."}
                   </p>
@@ -486,13 +510,27 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
 
           {step === "payment" && (
             <div className="space-y-4">
-              <div className="rounded-xl border border-dashed border-[var(--river-blue)]/35 bg-white p-4">
-                <p className="text-sm font-medium text-[var(--ink)]">Payment placeholder</p>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
-                  No charge is processed in this version. When payment goes live, full amount will
-                  be collected here. Listed price: {tour.price}
-                </p>
-              </div>
+              {canPayOnline ? (
+                <div className="rounded-xl border border-[var(--river-blue)]/20 bg-white p-4">
+                  <p className="text-sm font-medium text-[var(--ink)]">Secure payment</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
+                    Pay with international cards, Apple Pay, or Thai PromptPay. You will complete
+                    checkout on Stripe&apos;s secure page.
+                  </p>
+                  <ul className="mt-3 space-y-1.5 text-xs text-[var(--ink-muted)]">
+                    <li>Visa, Mastercard, Amex, and other international cards</li>
+                    <li>Apple Pay (Safari and supported devices)</li>
+                    <li>PromptPay for Thai bank apps</li>
+                  </ul>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-[var(--river-blue)]/35 bg-white p-4">
+                  <p className="text-sm font-medium text-[var(--ink)]">Payment not connected</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
+                    Online payment is not configured yet. Contact us by phone or email to reserve.
+                  </p>
+                </div>
+              )}
               <dl className="space-y-2 rounded-xl bg-[var(--river-blue)]/6 p-4 text-sm">
                 <div className="flex justify-between gap-4">
                   <dt className="text-[var(--ink-muted)]">Route</dt>
@@ -520,6 +558,12 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                     {formatGuestFullName(leadGuest.familyName, leadGuest.givenName) || "—"}
                   </dd>
                 </div>
+                <div className="flex justify-between gap-4 border-t border-[var(--river-blue)]/10 pt-2">
+                  <dt className="font-semibold text-[var(--ink)]">Total</dt>
+                  <dd className="font-semibold text-[var(--ink)]">
+                    {formatThbTotal(tour.priceThb * passengers)}
+                  </dd>
+                </div>
               </dl>
               {submitError ? (
                 <p className="text-sm text-[var(--river-blue-deep)]" role="alert">
@@ -538,7 +582,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
               </div>
               <h3 className="text-xl font-semibold text-[var(--ink)]">Booking recorded</h3>
               <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                {liveBooking ? (
+                {canBookOnline ? (
                   <>
                     Your request is saved. Confirmation email to{" "}
                     <strong className="text-[var(--ink)]">{email}</strong> will follow when
@@ -588,17 +632,19 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                 disabled={
                   submitting ||
                   (step === "date" && allowedDates.length === 0) ||
-                  (step === "payment" && !liveBooking)
+                  (step === "payment" && !canBookOnline)
                 }
                 aria-describedby={continueHint ? continueHintId : undefined}
                 className="ml-auto min-h-11 flex-1 rounded-full bg-[var(--marker-yellow)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] disabled:opacity-50"
               >
                 {step === "payment"
                   ? submitting
-                    ? "Saving…"
-                    : liveBooking
-                      ? "Complete booking"
-                      : "Complete booking (demo)"
+                    ? "Redirecting…"
+                    : canPayOnline
+                      ? "Pay now"
+                      : canBookOnline
+                        ? "Complete booking"
+                        : "Unavailable"
                   : "Continue"}
               </button>
             )}

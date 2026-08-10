@@ -34,7 +34,7 @@ function buildContentSecurityPolicy(): string {
     connectSrc,
     "frame-ancestors 'none'",
     "base-uri 'self'",
-    "form-action 'self'",
+    "form-action 'self' https://checkout.stripe.com",
     "object-src 'none'",
   ];
 

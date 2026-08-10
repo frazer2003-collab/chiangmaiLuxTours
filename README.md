@@ -13,7 +13,10 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Deploy (Vercel)
 
-**Public site (share this URL):** https://chiangmai-lux-tours.vercel.app/
+**Public site:** https://mekong-transfer.com (custom domain)  
+**Vercel URL:** https://chiangmai-lux-tours.vercel.app/
+
+**Custom domain setup:** see [DOMAIN_SETUP.md](./DOMAIN_SETUP.md)
 
 Import this repo on Vercel — **Root Directory** must be **empty** (repository root, not `website`).
 
@@ -24,7 +27,7 @@ Framework preset: **Next.js** (also set in `vercel.json`).
 | What you see | Cause | Fix |
 |---|---|---|
 | Browser says **Not secure** on `http://localhost:3000` | Local dev uses HTTP | Normal in development. Use the **https://** production URL above to test the live site. |
-| **Log in to Vercel** when opening a `*.vercel.app` link | Vercel Deployment Protection on preview/deployment URLs | Use **https://chiangmai-lux-tours.vercel.app/** instead, or disable protection: Vercel Dashboard → Project → **Settings → Deployment Protection** → turn **off** Vercel Authentication for Production. |
+| **Log in to Vercel** when opening a `*.vercel.app` link | Vercel Deployment Protection on preview/deployment URLs | Use **https://mekong-transfer.com** once the domain is connected, or disable protection: Vercel Dashboard → Project → **Settings → Deployment Protection** → turn **off** Vercel Authentication for Production. |
 | `404: NOT_FOUND` | Wrong root directory or stale deploy | Settings → General → Root Directory = blank → Redeploy latest `main`. |
 
 Repo: https://github.com/frazer2003-collab/chiangmaiLuxTours

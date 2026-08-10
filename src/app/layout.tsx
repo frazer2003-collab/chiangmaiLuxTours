@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Libre_Baskerville, Libre_Franklin } from "next/font/google";
+import { getSiteUrl, PRODUCTION_SITE_URL } from "@/lib/site-url";
 import "./globals.css";
 
 const chart = Libre_Baskerville({
@@ -14,10 +15,19 @@ const ui = Libre_Franklin({
   weight: ["400", "500", "600", "700"],
 });
 
+const siteUrl = getSiteUrl();
+const metadataBase =
+  siteUrl.startsWith("http://localhost") ? new URL(PRODUCTION_SITE_URL) : new URL(siteUrl);
+
 export const metadata: Metadata = {
+  metadataBase,
   title: "Mekong Transfer | Book Mekong Slow Boat Tours",
   description:
     "Licensed Mekong tours from Chiang Mai, Chiang Rai, Chiang Khong, and Huay Xai to Luang Prabang. Browse routes and book online.",
+  openGraph: {
+    siteName: "Mekong Transfer",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

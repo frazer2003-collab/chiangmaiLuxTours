@@ -7,6 +7,7 @@ import { CONTACT } from "@/lib/tours";
 import { SHARED_TOUR_INTRO } from "@/lib/types";
 import type { CatalogTour } from "@/lib/tour-catalog";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isStripePublicConfigured } from "@/lib/stripe/env";
 
 export function LandingContent({
   catalogTours,
@@ -15,6 +16,7 @@ export function LandingContent({
 }) {
   const tours = catalogTours;
   const liveDates = isSupabaseConfigured();
+  const stripePay = isStripePublicConfigured();
 
   const hubs = tours.map((tour) => ({
     name: tour.from === "Huay Xai" ? "Huay Xai Village" : tour.from,
@@ -35,7 +37,9 @@ export function LandingContent({
   },
   {
     q: "Is payment secure?",
-    a: "Payment is a placeholder in this version. No card is charged until a provider is connected.",
+    a: stripePay
+      ? "Yes. Checkout runs on Stripe with international cards, Apple Pay, and Thai PromptPay. We never store your card details."
+      : "Online payment will be processed securely via Stripe once connected. Until then, contact us to reserve.",
   },
   {
     q: "Where do I meet the boat?",
@@ -122,7 +126,7 @@ export function LandingContent({
                   : "Demo dates shown until admin calendar is live.",
               ],
               ["Enter details", "Passenger count, lead guest name, and email."],
-              ["Pay online", "Placeholder checkout — no charge in v1."],
+              ["Pay online", stripePay ? "Card, Apple Pay, or PromptPay via Stripe Checkout." : "Placeholder checkout until Stripe is connected."],
             ].map(([title, body]) => (
               <li key={title} className="rounded-2xl border border-[var(--river-blue)]/15 bg-white p-5">
                 <h3 className="font-semibold text-[var(--ink)]">{title}</h3>
