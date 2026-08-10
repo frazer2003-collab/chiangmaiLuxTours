@@ -1,49 +1,64 @@
 # Stripe setup — mekong-transfer.com
 
-Do this after https://mekong-transfer.com loads in the browser (see **DOMAIN_SETUP.md** first).
+Production site: https://mekong-transfer.com
 
-## 1. Vercel environment
-
-**Settings → Environment Variables** (Production):
+## Vercel environment (Production)
 
 | Variable | Value |
 |----------|--------|
 | `NEXT_PUBLIC_SITE_URL` | `https://mekong-transfer.com` |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://YOUR-PROJECT.supabase.co` (no `/rest/v1/`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | From Supabase API settings |
+| `SUPABASE_SERVICE_ROLE_KEY` | From Supabase API settings |
 | `STRIPE_SECRET_KEY` | `sk_live_...` or `sk_test_...` |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` or `pk_test_...` |
-| `STRIPE_WEBHOOK_SECRET` | From step 2 (`whsec_...`) |
+| `STRIPE_WEBHOOK_SECRET` | From webhook signing secret (`whsec_...`) |
 
-Redeploy after changes.
+Redeploy after any change.
 
-## 2. Stripe webhook (`STRIPE_WEBHOOK_SECRET`)
+## Stripe webhook
 
 1. [Stripe → Developers → Webhooks](https://dashboard.stripe.com/webhooks)
-2. **Add endpoint**
+2. **Add endpoint** (or edit existing)
 3. URL: **`https://mekong-transfer.com/api/webhooks/stripe`**
-4. Events: `checkout.session.completed`, `checkout.session.expired`
-5. Save → open endpoint → **Signing secret** → **Reveal** → copy `whsec_...`
-6. Add to Vercel as `STRIPE_WEBHOOK_SECRET` → redeploy
+4. Subscribe to **all four** events:
+   - `checkout.session.completed` — cards, Apple Pay (immediate)
+   - `checkout.session.async_payment_succeeded` — **PromptPay** (required)
+   - `checkout.session.async_payment_failed` — release seats if PromptPay fails
+   - `checkout.session.expired` — release seats when checkout times out
+5. Save → **Signing secret** → **Reveal** → copy `whsec_...`
+6. Paste into Vercel as `STRIPE_WEBHOOK_SECRET` → redeploy
 
-## 3. Apple Pay domain
+## Payment methods (Stripe Dashboard)
 
-1. [Stripe → Payment methods → Apple Pay](https://dashboard.stripe.com/settings/payment_methods)
-2. **Configure domains** → add **`mekong-transfer.com`**
-3. Complete verification (DNS TXT or hosted file)
+- **Settings → Business** — Thailand + THB
+- **Settings → Payment methods** — Cards, **PromptPay**, **Apple Pay**
+- **Apple Pay → Configure domains** — add `mekong-transfer.com` and complete verification
 
-## 4. Payment methods
+## Supabase
 
-- Settings → Business → Thailand + THB
-- Payment methods → Cards, **PromptPay**, **Apple Pay**
-
-## 5. Supabase migration
-
-Run if not applied:
+Run in SQL Editor if not applied:
 
 `supabase/migrations/20260809140000_stripe_booking_confirm.sql`
 
-## 6. Smoke test
+**Authentication → URL Configuration:**
 
-1. Book on https://mekong-transfer.com
-2. Pay (test card `4242 4242 4242 4242` in test mode)
-3. Land on `/booking/complete`
-4. Booking **confirmed** in `/admin`
+- Site URL: `https://mekong-transfer.com`
+- Redirect URLs: `https://mekong-transfer.com/**`
+
+## Smoke test
+
+1. Open https://mekong-transfer.com → book a route
+2. **Card test** (test mode): `4242 4242 4242 4242` · any future expiry · any CVC
+3. Confirm redirect to `/booking/complete` with “Booking confirmed”
+4. Check `/admin` — booking status **confirmed**
+5. **PromptPay test** (test mode): choose PromptPay, complete QR flow; refresh complete page after ~1 min
+6. In Stripe → Webhooks → your endpoint → **Event deliveries** — events should show `200 OK`
+
+## Local webhooks
+
+```powershell
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
+
+Use the CLI `whsec_...` in `.env.local` as `STRIPE_WEBHOOK_SECRET` and set `NEXT_PUBLIC_SITE_URL=http://localhost:3000`.

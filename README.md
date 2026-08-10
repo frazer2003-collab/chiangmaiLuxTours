@@ -63,3 +63,12 @@ Mobile-first panel for dates, prices, and bookings. Requires Supabase.
 Add the same env vars in Vercel → Project → Settings → Environment Variables, then **Redeploy** (required so `NEXT_PUBLIC_*` vars are baked into the browser bundle).
 
 `NEXT_PUBLIC_SUPABASE_URL` must look like `https://abcdefghijklmnop.supabase.co` — not your Vercel site URL.
+
+## Stripe payments
+
+Live checkout: cards, Apple Pay, and Thai PromptPay via Stripe.
+
+**Setup guide:** [STRIPE_AFTER_DOMAIN.md](./STRIPE_AFTER_DOMAIN.md)  
+**Domain + Supabase URLs:** [DOMAIN_SETUP.md](./DOMAIN_SETUP.md)
+
+Required Vercel vars: `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_SITE_URL`.

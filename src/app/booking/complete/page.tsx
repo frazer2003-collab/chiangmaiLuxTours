@@ -47,8 +47,9 @@ export default async function BookingCompletePage({
               Payment pending
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-[var(--ink-muted)]">
-              We could not verify your payment yet. If you completed checkout, refresh this page
-              in a moment or contact us with your booking reference.
+              {sessionId
+                ? "If you paid with PromptPay, confirmation can take a minute. Refresh this page shortly. Card and Apple Pay usually confirm immediately."
+                : "We could not verify your payment yet. If you completed checkout, refresh this page in a moment or contact us with your booking reference."}
             </p>
           </>
         )}
