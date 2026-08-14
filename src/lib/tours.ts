@@ -50,6 +50,13 @@ export const tours: Tour[] = [
     includes: SHARED_INCLUDES,
     demoDates: ["2026-08-15", "2026-08-22", "2026-09-05", "2026-09-12"],
     chartPosition: 1,
+    image: "/photos/boat-yellow.jpg",
+    imageAlt: "Mekong slow boat with yellow hull on the river below jungle hills",
+    gallery: [
+      { src: "/photos/cabin.jpg", alt: "Wooden cabin seating along the slow boat aisle" },
+      { src: "/photos/hotel-room.jpg", alt: "Overnight guesthouse room on the Chiang Mai route" },
+      { src: "/photos/hotel-terrace.jpg", alt: "River-view terrace at the overnight stop" },
+    ],
   },
   {
     id: "chiang-rai-luang-prabang",
@@ -83,6 +90,12 @@ export const tours: Tour[] = [
     includes: SHARED_INCLUDES,
     demoDates: ["2026-08-18", "2026-08-25", "2026-09-08"],
     chartPosition: 2,
+    image: "/photos/boat-passengers.jpg",
+    imageAlt: "Passengers on the open bow of a Mekong slow boat",
+    gallery: [
+      { src: "/photos/interior.jpg", alt: "Covered cabin with booth seating and life jackets" },
+      { src: "/photos/van.jpg", alt: "Hotel transfer van included with the route" },
+    ],
   },
   {
     id: "chiang-khong-luang-prabang",
@@ -116,6 +129,11 @@ export const tours: Tour[] = [
     includes: SHARED_INCLUDES,
     demoDates: ["2026-08-14", "2026-08-21", "2026-09-04"],
     chartPosition: 3,
+    image: "/photos/boat-dock.jpg",
+    imageAlt: "Green and red slow boat moored on a Mekong sandbank",
+    gallery: [
+      { src: "/photos/fleet.jpg", alt: "Slow boats lined along the Chiang Khong riverbank" },
+    ],
   },
   {
     id: "huay-xai-luang-prabang",
@@ -149,6 +167,11 @@ export const tours: Tour[] = [
     includes: SHARED_INCLUDES,
     demoDates: ["2026-08-20", "2026-08-27", "2026-09-10"],
     chartPosition: 4,
+    image: "/photos/fleet.jpg",
+    imageAlt: "Slow boat fleet at Huay Xai on the Mekong",
+    gallery: [
+      { src: "/photos/cabin-lounge.jpg", alt: "Wooden lounge seating inside the slow boat" },
+    ],
   },
 ];
 

@@ -26,6 +26,9 @@ export type Tour = {
   includes: string[];
   demoDates: string[];
   chartPosition: number;
+  image: string;
+  imageAlt: string;
+  gallery?: { src: string; alt: string }[];
 };
 
 export type BookingDraft = {

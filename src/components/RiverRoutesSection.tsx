@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BookTourButton } from "@/components/booking/BookTourButton";
 import { TourDetailPanel } from "@/components/TourDetailPanel";
+import { RoutePhoto } from "@/components/RoutePhoto";
 import { IconChevron } from "@/components/icons";
 import { BOOK_ROUTE_LABEL, anchorSection, btnBookRoute } from "@/lib/guest-ui";
 import type { CatalogTour } from "@/lib/tour-catalog";
@@ -210,13 +211,14 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
                           : "border-[var(--river-blue)]/18"
                       }`}
                     >
-                      <div className="relative aspect-[4/3] bg-[linear-gradient(145deg,var(--river-blue)_0%,var(--river-blue-deep)_55%,var(--river-navy)_100%)]">
-                        <div className="absolute inset-0 flex items-end p-4">
-                          <span className="rounded-md bg-black/35 px-2 py-1 text-xs font-medium uppercase tracking-wider text-white/90">
-                            Photo placeholder
-                          </span>
-                        </div>
-                        <span className="absolute left-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--marker-yellow)] text-xs font-bold text-[var(--ink)]">
+                      <div className="relative aspect-[4/3]">
+                        <RoutePhoto
+                          src={tour.image}
+                          alt={tour.imageAlt}
+                          className="h-full w-full"
+                          sizes="(min-width: 1280px) 22vw, (min-width: 768px) 44vw, 78vw"
+                        />
+                        <span className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--marker-yellow)] text-xs font-bold text-[var(--ink)] shadow-[0_6px_16px_-8px_rgba(15,39,64,0.55)]">
                           {tour.chartPosition}
                         </span>
                       </div>

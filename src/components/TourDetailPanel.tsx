@@ -1,10 +1,13 @@
 "use client";
 
 import { BookTourButton } from "@/components/booking/BookTourButton";
+import { RoutePhoto } from "@/components/RoutePhoto";
 import { BOOK_ROUTE_LABEL, anchorSection, btnBookRoute } from "@/lib/guest-ui";
 import type { CatalogTour } from "@/lib/tour-catalog";
 
 export function TourDetailPanel({ tour }: { tour: CatalogTour }) {
+  const gallery = tour.gallery ?? [];
+
   return (
     <div
       id="route-detail"
@@ -13,6 +16,12 @@ export function TourDetailPanel({ tour }: { tour: CatalogTour }) {
     >
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
         <div>
+          <RoutePhoto
+            src={tour.image}
+            alt={tour.imageAlt}
+            className="mb-6 aspect-[16/10] rounded-2xl"
+            sizes="(min-width: 1024px) 55vw, 100vw"
+          />
           <h3
             id="route-detail-title"
             className="font-[family-name:var(--font-chart)] text-2xl tracking-[-0.02em] text-[var(--ink)] sm:text-3xl"
@@ -29,6 +38,21 @@ export function TourDetailPanel({ tour }: { tour: CatalogTour }) {
               {tour.overnightNote}
             </p>
           )}
+
+          {gallery.length > 0 ? (
+            <ul className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {gallery.map((shot) => (
+                <li key={shot.src}>
+                  <RoutePhoto
+                    src={shot.src}
+                    alt={shot.alt}
+                    className="aspect-[4/3] rounded-xl"
+                    sizes="(min-width: 1024px) 18vw, 45vw"
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : null}
 
           <div className="mt-6">
             <h4 className="text-sm font-semibold text-[var(--ink)]">Itinerary</h4>

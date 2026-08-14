@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { RiverRoutesSection } from "@/components/RiverRoutesSection";
+import { RoutePhoto } from "@/components/RoutePhoto";
 import { IconChevron, IconMapPin, IconShield } from "@/components/icons";
 import { btnNavPill } from "@/lib/guest-ui";
 import { CONTACT } from "@/lib/tours";
@@ -72,9 +73,23 @@ export function LandingContent({
 
       <main id="main">
       <section className="relative overflow-hidden bg-[var(--river-navy)] text-white">
-        <div className="chart-grid absolute inset-0 opacity-[0.08]" aria-hidden />
+        <div className="absolute inset-0">
+          <RoutePhoto
+            src="/photos/hero.png"
+            alt="Mekong Transfer slow boat crossing the river at sunset"
+            className="h-full w-full"
+            sizes="100vw"
+            priority
+            objectPosition="center 42%"
+          />
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-[var(--river-navy)]/90 via-[var(--river-navy)]/68 to-[var(--river-navy)]/28"
+            aria-hidden
+          />
+          <div className="chart-grid absolute inset-0 opacity-[0.08]" aria-hidden />
+        </div>
         <svg
-          className="absolute bottom-0 left-0 w-full text-[var(--river-blue)]/40"
+          className="absolute bottom-0 left-0 w-full text-[var(--chart-paper)]"
           viewBox="0 0 1440 120"
           preserveAspectRatio="none"
           aria-hidden
@@ -84,23 +99,23 @@ export function LandingContent({
             d="M0,80 C240,20 480,100 720,60 C960,20 1200,90 1440,40 L1440,120 L0,120 Z"
           />
         </svg>
-        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-14">
+        <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-12 sm:px-6 sm:pb-24 sm:pt-16">
           <div className="max-w-2xl">
             <h1 className="font-[family-name:var(--font-chart)] text-[clamp(2rem,6vw,3.25rem)] leading-[1.05] tracking-[-0.03em] text-balance">
               Cruise the Mighty Mekong
             </h1>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-white/82 sm:text-lg">
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-white/88 sm:text-lg">
               {SHARED_TOUR_INTRO}
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
                 href="#tours"
-                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--marker-yellow)] px-5 py-3 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--marker-yellow)] px-5 py-3 text-sm font-semibold text-[var(--ink)] shadow-[0_8px_20px_-8px_rgba(242,201,76,0.8)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 Choose a route
                 <IconChevron className="h-4 w-4" />
               </a>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-medium text-white/90">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[var(--river-navy)]/45 px-4 py-2 text-xs font-medium text-white/92">
                 <IconShield className="h-4 w-4 text-[var(--marker-yellow)]" />
                 TAT Licence ID 21/01279
               </div>
@@ -143,9 +158,17 @@ export function LandingContent({
             Meeting points
           </h2>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--ink-muted)]">
-            Departure hubs for each route — all journeys finish in Luang Prabang.
+            Departure hubs for each route — all journeys finish in Luang Prabang. Hotel transfer
+            is included.
           </p>
-          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)] lg:items-stretch">
+            <RoutePhoto
+              src="/photos/van.jpg"
+              alt="Air-conditioned van used for hotel transfers to the pier"
+              className="aspect-[16/10] rounded-2xl lg:h-full lg:min-h-[14rem] lg:aspect-auto"
+              sizes="(min-width: 1024px) 40vw, 100vw"
+            />
+            <ul className="grid gap-3 sm:grid-cols-2">
             {hubs.map((hub) => (
               <li
                 key={hub.name}
@@ -159,7 +182,8 @@ export function LandingContent({
                 </div>
               </li>
             ))}
-          </ul>
+            </ul>
+          </div>
         </div>
       </section>
 
