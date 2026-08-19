@@ -94,6 +94,10 @@ export const translations = {
     idNumber: "Passport / Thai ID",
     nationality: "Nationality",
     dateOfBirth: "Date of birth",
+    groupToday: "Today",
+    groupNextDepartures: "Next 7 days",
+    groupLater: "Later",
+    groupPast: "Past",
   },
   th: {
     appName: "Mekong Transfer",
@@ -187,6 +191,10 @@ export const translations = {
     idNumber: "หนังสือเดินทาง / บัตรประชาชน",
     nationality: "สัญชาติ",
     dateOfBirth: "วันเกิด",
+    groupToday: "วันนี้",
+    groupNextDepartures: "7 วันถัดไป",
+    groupLater: "ภายหลัง",
+    groupPast: "ผ่านมาแล้ว",
   },
 } as const;
 

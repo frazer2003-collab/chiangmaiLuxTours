@@ -55,29 +55,59 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
   const [pending, startTransition] = useTransition();
   const [action, setAction] = useState<"save" | "refund" | null>(null);
   const [refundConfirmOpen, setRefundConfirmOpen] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
   const localeTag = locale === "th" ? "th-TH" : "en-GB";
   const today = new Date().toISOString().slice(0, 10);
 
-  const filtered = useMemo(() => {
-    const sorted = [...bookings].sort((a, b) => {
+  type BookingGroup = { label: string; items: DbBooking[] };
+
+  const { groups, flatFiltered } = useMemo(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    const tomorrowIso = tomorrow.toISOString().slice(0, 10);
+    const nextWeekIso = nextWeek.toISOString().slice(0, 10);
+
+    const base = [...bookings];
+
+    const applyFilter = (list: DbBooking[]) => {
+      if (filter === "pending") return list.filter((b) => b.status === "pending");
+      if (filter === "upcoming")
+        return list.filter(
+          (b) => b.travel_date >= today && (b.status === "pending" || b.status === "confirmed"),
+        );
+      return list;
+    };
+
+    const pool = applyFilter(base);
+
+    const urgencySort = (a: DbBooking, b: DbBooking) => {
       if (a.status === "pending" && b.status !== "pending") return -1;
       if (b.status === "pending" && a.status !== "pending") return 1;
-      return b.created_at.localeCompare(a.created_at);
-    });
+      return a.travel_date.localeCompare(b.travel_date);
+    };
 
-    if (filter === "pending") {
-      return sorted.filter((b) => b.status === "pending");
-    }
-    if (filter === "upcoming") {
-      return sorted.filter(
-        (b) =>
-          b.travel_date >= today &&
-          (b.status === "pending" || b.status === "confirmed"),
-      );
-    }
-    return sorted;
-  }, [bookings, filter, today]);
+    const todayGroup = pool.filter((b) => b.travel_date === today).sort(urgencySort);
+    const nextGroup = pool
+      .filter((b) => b.travel_date >= tomorrowIso && b.travel_date < nextWeekIso)
+      .sort(urgencySort);
+    const laterGroup = pool
+      .filter((b) => b.travel_date >= nextWeekIso)
+      .sort(urgencySort);
+    const pastGroup = pool
+      .filter((b) => b.travel_date < today)
+      .sort((a, b) => b.travel_date.localeCompare(a.travel_date));
+
+    const result: BookingGroup[] = [];
+    if (todayGroup.length) result.push({ label: tr("groupToday"), items: todayGroup });
+    if (nextGroup.length) result.push({ label: tr("groupNextDepartures"), items: nextGroup });
+    if (laterGroup.length) result.push({ label: tr("groupLater"), items: laterGroup });
+    if (pastGroup.length) result.push({ label: tr("groupPast"), items: pastGroup });
+
+    return { groups: result, flatFiltered: pool };
+  }, [bookings, filter, today, tr]);
 
   const pendingCount = bookings.filter((b) => b.status === "pending").length;
 
@@ -98,6 +128,7 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
       if (showSkeleton) setRefreshing(false);
       if (result.ok && result.data) {
         setBookings(result.data);
+        setLastRefreshed(new Date());
         return;
       }
       setFetchError(!result.ok ? result.error : tr("errorRetry"));
@@ -188,15 +219,20 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
           </button>
         ))}
         </div>
-        <button
-          type="button"
-          onClick={() => refresh()}
-          disabled={refreshing || pending}
-          className="inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-medium text-[var(--river-blue)] ring-1 ring-[var(--river-blue)]/15 hover:bg-[var(--river-blue)]/8 disabled:opacity-50"
-        >
-          {refreshing ? <AdminSpinner className="h-4 w-4" /> : null}
-          {refreshing ? tr("refreshing") : tr("refreshList")}
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-[var(--ink-muted)]">
+            {lastRefreshed.toLocaleTimeString(localeTag, { hour: "2-digit", minute: "2-digit" })}
+          </span>
+          <button
+            type="button"
+            onClick={() => refresh()}
+            disabled={refreshing || pending}
+            className="inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-medium text-[var(--river-blue)] ring-1 ring-[var(--river-blue)]/15 hover:bg-[var(--river-blue)]/8 disabled:opacity-50"
+          >
+            {refreshing ? <AdminSpinner className="h-4 w-4" /> : null}
+            {refreshing ? tr("refreshing") : tr("refreshList")}
+          </button>
+        </div>
       </div>
 
       {fetchError ? (
@@ -205,42 +241,55 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
 
       {refreshing ? (
         <AdminSkeletonList count={3} />
-      ) : filtered.length === 0 ? (
+      ) : flatFiltered.length === 0 ? (
         <div className="rounded-2xl bg-white px-5 py-10 text-center ring-1 ring-[var(--river-blue)]/10">
           <p className="font-medium text-[var(--ink)]">{tr("noBookings")}</p>
           <p className="mt-2 text-sm text-[var(--ink-muted)]">{tr("noBookingsHint")}</p>
         </div>
       ) : (
-        <ul className="space-y-2">
-          {filtered.map((booking) => (
-            <li key={booking.id}>
-              <button
-                type="button"
-                onClick={() => setSelected(booking)}
-                className="w-full rounded-2xl bg-white px-4 py-3.5 text-left ring-1 ring-[var(--river-blue)]/10 transition hover:ring-[var(--river-blue)]/25"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-[var(--ink)]">
-                      {booking.guest_name}
-                    </p>
-                    <p className="mt-0.5 truncate text-sm text-[var(--ink-muted)]">
-                      {tourName(booking.tour_id)}
-                    </p>
-                  </div>
-                  <StatusChip status={booking.status} locale={locale} />
-                </div>
-                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-[var(--ink-muted)]">
-                  <span>{formatDisplayDate(booking.travel_date, localeTag)}</span>
-                  <span>
-                    {booking.passengers}{" "}
-                    {booking.passengers === 1 ? tr("passenger") : tr("passengers")}
-                  </span>
-                </div>
-              </button>
-            </li>
+        <div className="space-y-5">
+          {groups.map((group) => (
+            <section key={group.label}>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--river-blue)]">
+                {group.label}
+              </h3>
+              <ul className="space-y-2">
+                {group.items.map((booking) => (
+                  <li key={booking.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelected(booking)}
+                      className={`w-full rounded-2xl bg-white px-4 py-3.5 text-left ring-1 transition hover:ring-[var(--river-blue)]/25 ${
+                        booking.status === "pending" && booking.travel_date <= today
+                          ? "ring-[var(--marker-yellow)]/60"
+                          : "ring-[var(--river-blue)]/10"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-[var(--ink)]">
+                            {booking.guest_name}
+                          </p>
+                          <p className="mt-0.5 truncate text-sm text-[var(--ink-muted)]">
+                            {tourName(booking.tour_id)}
+                          </p>
+                        </div>
+                        <StatusChip status={booking.status} locale={locale} />
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-[var(--ink-muted)]">
+                        <span>{formatDisplayDate(booking.travel_date, localeTag)}</span>
+                        <span>
+                          {booking.passengers}{" "}
+                          {booking.passengers === 1 ? tr("passenger") : tr("passengers")}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       )}
 
       {selected ? (
@@ -285,64 +334,15 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
                     {formatDisplayDate(selected.travel_date, localeTag)}
                   </dd>
                 </div>
+                <div>
+                  <dt className="text-[var(--ink-muted)]">{tr("passengers")}</dt>
+                  <dd className="font-medium">{selected.passengers}</dd>
+                </div>
+                <div>
+                  <dt className="text-[var(--ink-muted)]">{tr("email")}</dt>
+                  <dd className="font-medium break-all">{selected.guest_email}</dd>
+                </div>
               </dl>
-
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-[var(--ink)]">{tr("guestDetails")}</p>
-                {getBookingPassengers(selected).map((passenger, index) => (
-                  <div
-                    key={index}
-                    className="rounded-xl bg-white p-3 ring-1 ring-[var(--river-blue)]/10"
-                  >
-                    <p className="mb-3 text-sm font-semibold text-[var(--ink)]">
-                      {tr("passengerNumber").replace("{n}", String(index + 1))}
-                      {index === 0 ? " · Lead" : ""}
-                    </p>
-                    <dl className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <dt className="text-[var(--ink-muted)]">{tr("familyName")}</dt>
-                        <dd className="font-medium">{passenger.family_name || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-[var(--ink-muted)]">{tr("givenName")}</dt>
-                        <dd className="font-medium">{passenger.given_name || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-[var(--ink-muted)]">{tr("gender")}</dt>
-                        <dd className="font-medium">
-                          {adminGenderLabel(tr, passenger.gender)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-[var(--ink-muted)]">{tr("nationality")}</dt>
-                        <dd className="font-medium">{passenger.nationality || "—"}</dd>
-                      </div>
-                      <div className="col-span-2">
-                        <dt className="text-[var(--ink-muted)]">{tr("idNumber")}</dt>
-                        <dd className="font-medium break-all">{passenger.id_number || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-[var(--ink-muted)]">{tr("dateOfBirth")}</dt>
-                        <dd className="font-medium">
-                          {passenger.date_of_birth
-                            ? formatDisplayDate(passenger.date_of_birth, localeTag)
-                            : "—"}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                ))}
-                <dl className="grid grid-cols-2 gap-3 rounded-xl bg-white p-3 text-sm ring-1 ring-[var(--river-blue)]/10">
-                  <div>
-                    <dt className="text-[var(--ink-muted)]">{tr("passengers")}</dt>
-                    <dd className="font-medium">{selected.passengers}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-[var(--ink-muted)]">{tr("email")}</dt>
-                    <dd className="font-medium break-all">{selected.guest_email}</dd>
-                  </div>
-                </dl>
-              </div>
 
               <div>
                 <p className="mb-2 text-sm font-medium">{tr("status")}</p>
@@ -372,7 +372,7 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
                 </label>
                 <textarea
                   id="admin-notes"
-                  rows={3}
+                  rows={2}
                   maxLength={500}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -381,19 +381,71 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
                 />
               </div>
 
-              <div>
-                <label htmlFor="refund-note" className="mb-1.5 block text-sm font-medium">
-                  {tr("refundNote")}
-                </label>
-                <textarea
-                  id="refund-note"
-                  rows={2}
-                  maxLength={500}
-                  value={refundNote}
-                  onChange={(e) => setRefundNote(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--river-blue)]/20 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
-                />
-              </div>
+              {(status === "refunded" || selected.status === "refunded" || selected.refund_note) ? (
+                <div>
+                  <label htmlFor="refund-note" className="mb-1.5 block text-sm font-medium">
+                    {tr("refundNote")}
+                  </label>
+                  <textarea
+                    id="refund-note"
+                    rows={2}
+                    maxLength={500}
+                    value={refundNote}
+                    onChange={(e) => setRefundNote(e.target.value)}
+                    className="w-full rounded-xl border border-[var(--river-blue)]/20 bg-white px-3 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+                  />
+                </div>
+              ) : null}
+
+              <details className="group rounded-2xl bg-white ring-1 ring-[var(--river-blue)]/10">
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-[var(--ink)] marker:content-none [&::-webkit-details-marker]:hidden">
+                  {tr("guestDetails")} · {selected.passengers} {selected.passengers === 1 ? tr("passenger") : tr("passengers")}
+                  <svg className="h-4 w-4 shrink-0 text-[var(--river-blue)] transition group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+                </summary>
+                <div className="space-y-3 px-4 pb-4">
+                  {getBookingPassengers(selected).map((passenger, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl bg-[var(--chart-paper)] p-3"
+                    >
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--river-blue)]">
+                        {tr("passengerNumber").replace("{n}", String(index + 1))}
+                        {index === 0 ? " · Lead" : ""}
+                      </p>
+                      <dl className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <dt className="text-[var(--ink-muted)]">{tr("familyName")}</dt>
+                          <dd className="font-medium">{passenger.family_name || "—"}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-[var(--ink-muted)]">{tr("givenName")}</dt>
+                          <dd className="font-medium">{passenger.given_name || "—"}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-[var(--ink-muted)]">{tr("gender")}</dt>
+                          <dd className="font-medium">{adminGenderLabel(tr, passenger.gender)}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-[var(--ink-muted)]">{tr("nationality")}</dt>
+                          <dd className="font-medium">{passenger.nationality || "—"}</dd>
+                        </div>
+                        <div className="col-span-2">
+                          <dt className="text-[var(--ink-muted)]">{tr("idNumber")}</dt>
+                          <dd className="font-medium break-all">{passenger.id_number || "—"}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-[var(--ink-muted)]">{tr("dateOfBirth")}</dt>
+                          <dd className="font-medium">
+                            {passenger.date_of_birth
+                              ? formatDisplayDate(passenger.date_of_birth, localeTag)
+                              : "—"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  ))}
+                </div>
+              </details>
 
               {message ? (
                 <AdminStatusBanner

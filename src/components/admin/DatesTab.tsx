@@ -88,15 +88,27 @@ export function DatesTab({
     });
   }
 
-  function handleCapacityChange(id: string, capacity: number) {
+  const [capacityDrafts, setCapacityDrafts] = useState<Record<string, number>>({});
+  const [savingCapId, setSavingCapId] = useState<string | null>(null);
+
+  function handleCapacitySave(id: string) {
+    const capacity = capacityDrafts[id];
+    if (capacity == null) return;
     setError(null);
     setSuccess(null);
+    setSavingCapId(id);
     startTransition(async () => {
       const result = await updateTourDateCapacity({ id, capacity });
+      setSavingCapId(null);
       if (!result.ok) {
         setError(result.error);
         return;
       }
+      setCapacityDrafts((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
       setSuccess(tr("saved"));
       reloadDates(tourId);
     });
@@ -148,20 +160,26 @@ export function DatesTab({
       <div>
         <p className="mb-2 text-sm font-medium text-[var(--ink)]">{tr("selectTour")}</p>
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {tours.map((tour) => (
-            <button
-              key={tour.id}
-              type="button"
-              onClick={() => setTourId(tour.id)}
-              className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition ${
-                tourId === tour.id
-                  ? "bg-[var(--river-blue)] text-white"
-                  : "bg-white text-[var(--ink-muted)] ring-1 ring-[var(--river-blue)]/15"
-              }`}
-            >
-              {tour.from}
-            </button>
-          ))}
+          {tours.map((tour) => {
+            const shortLabel = tour.name.replace(/→/g, "→\n").split("\n")[0]?.trim() ?? tour.from;
+            return (
+              <button
+                key={tour.id}
+                type="button"
+                onClick={() => setTourId(tour.id)}
+                className={`flex shrink-0 flex-col items-start rounded-xl px-3.5 py-2 text-left transition ${
+                  tourId === tour.id
+                    ? "bg-[var(--river-blue)] text-white"
+                    : "bg-white text-[var(--ink-muted)] ring-1 ring-[var(--river-blue)]/15"
+                }`}
+              >
+                <span className="text-sm font-medium leading-tight">{shortLabel}</span>
+                <span className={`text-xs leading-tight ${tourId === tour.id ? "text-white/70" : "text-[var(--ink-muted)]"}`}>
+                  {tour.duration}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -226,7 +244,7 @@ export function DatesTab({
                         {isFull ? ` · ${tr("full")}` : ""}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <label className="sr-only" htmlFor={`cap-${row.id}`}>
                         {tr("capacity")}
                       </label>
@@ -235,13 +253,24 @@ export function DatesTab({
                         type="number"
                         min={row.booked_count}
                         max={999}
-                        defaultValue={row.capacity}
-                        disabled={pending}
-                        onBlur={(e) =>
-                          handleCapacityChange(row.id, Number(e.target.value))
+                        value={capacityDrafts[row.id] ?? row.capacity}
+                        onChange={(e) =>
+                          setCapacityDrafts((prev) => ({ ...prev, [row.id]: Number(e.target.value) }))
                         }
+                        disabled={pending}
                         className="min-h-11 w-20 rounded-lg border border-[var(--river-blue)]/20 px-2 py-1.5 text-center text-sm"
                       />
+                      {capacityDrafts[row.id] != null && capacityDrafts[row.id] !== row.capacity ? (
+                        <button
+                          type="button"
+                          disabled={pending}
+                          onClick={() => handleCapacitySave(row.id)}
+                          className="inline-flex min-h-9 items-center gap-1 rounded-full bg-[var(--river-blue)] px-3 text-xs font-semibold text-white disabled:opacity-50"
+                        >
+                          {savingCapId === row.id ? <AdminSpinner className="h-3 w-3 text-white" /> : null}
+                          {tr("save")}
+                        </button>
+                      ) : null}
                     </div>
                   </div>
                   <div className="mt-3 flex gap-2">
