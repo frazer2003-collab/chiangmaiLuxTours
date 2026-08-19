@@ -80,7 +80,7 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
             River routes
           </h2>
           <p className="mt-3 text-base leading-relaxed text-[var(--ink-muted)]">
-            Four departures on the chart — one route to Luang Prabang from each hub.
+            Six routes to Luang Prabang — by slow boat, van, or train from different hubs.
           </p>
         </div>
 
@@ -105,7 +105,7 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
                   }}
                   className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-[var(--chart-paper)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
                   style={{
-                    left: `${(tour.chartPosition - 1) * 28 + 8}%`,
+                    left: `${((tour.chartPosition - 1) / Math.max(tours.length - 1, 1)) * 84 + 8}%`,
                     backgroundColor: isSelected
                       ? "var(--marker-yellow)"
                       : "color-mix(in srgb, var(--river-blue) 35%, white)",
@@ -187,7 +187,7 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
 
             <div
               ref={scrollRef}
-              className="river-routes-carousel flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scroll-ps-4 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:pb-0 xl:grid-cols-4 [&::-webkit-scrollbar]:hidden"
+              className="river-routes-carousel flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scroll-ps-4 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:pb-0 xl:grid-cols-3 [&::-webkit-scrollbar]:hidden"
             >
               {tours.map((tour) => {
                 const isSelected = tour.id === selectedId;

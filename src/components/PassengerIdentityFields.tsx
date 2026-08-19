@@ -77,7 +77,7 @@ export function PassengerIdentityFields({
         </div>
         <div>
           <label htmlFor={`${prefix}-given-name`} className="mb-1.5 block text-sm font-medium">
-            Name
+            Given name
           </label>
           <input
             id={`${prefix}-given-name`}
@@ -98,17 +98,19 @@ export function PassengerIdentityFields({
       </div>
 
       <div>
-        <p className="mb-2 text-sm font-medium">Male or female or N/A</p>
+        <p className="mb-2 text-sm font-medium" id={`${prefix}-gender-label`}>
+          Gender
+        </p>
         <div
           className="grid grid-cols-3 gap-2"
           role="radiogroup"
-          aria-label={`Passenger ${index + 1} gender`}
+          aria-labelledby={`${prefix}-gender-label`}
           aria-invalid={errors.gender ? true : undefined}
         >
           {(["male", "female", "na"] as const).map((option) => (
             <label
               key={option}
-              className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-2 text-sm font-medium transition ${
+              className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-1.5 text-center text-xs font-medium leading-snug transition sm:px-2 sm:text-sm ${
                 value.gender === option
                   ? "border-[var(--marker-yellow)] bg-[var(--marker-yellow)]/15 text-[var(--ink)]"
                   : "border-[var(--river-blue)]/20 bg-white text-[var(--ink-muted)]"

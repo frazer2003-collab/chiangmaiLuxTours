@@ -36,7 +36,7 @@ export function validateGender(gender: string): string | null {
   if (gender === "male" || gender === "female" || gender === "na") {
     return null;
   }
-  return "Select male, female, or N/A.";
+  return "Select male, female, or prefer not to say.";
 }
 
 export function validateIdNumber(idNumber: string): string | null {
@@ -213,5 +213,5 @@ export function isGuestGender(value: string): value is GuestGender {
 export function genderLabel(gender: GuestGender): string {
   if (gender === "male") return "Male";
   if (gender === "female") return "Female";
-  return "N/A";
+  return "Prefer not to say";
 }

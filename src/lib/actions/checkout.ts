@@ -1,11 +1,12 @@
 "use server";
 
 import { submitBooking } from "@/lib/actions/booking";
-import { getCatalogTours, getTourFromCatalog } from "@/lib/tour-catalog";
+import { getCatalog, getTourFromCatalog } from "@/lib/tour-catalog";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isStripeConfigured, getSiteUrl, thbToStripeAmount } from "@/lib/stripe/env";
 import { getStripe } from "@/lib/stripe/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { DATES_UNAVAILABLE } from "@/lib/guest-legal";
 
 import type { PassengerFormState } from "@/lib/booking-passengers";
 
@@ -22,10 +23,7 @@ export async function startStripeCheckout(input: {
   allowedDates: string[];
 }): Promise<StartCheckoutResult> {
   if (!isSupabaseConfigured()) {
-    return {
-      ok: false,
-      error: "Live booking is not configured yet. Contact us by phone or email to reserve.",
-    };
+    return { ok: false, error: DATES_UNAVAILABLE };
   }
 
   if (!isStripeConfigured()) {
@@ -35,8 +33,12 @@ export async function startStripeCheckout(input: {
     };
   }
 
-  const catalog = await getCatalogTours();
-  const tour = getTourFromCatalog(catalog, input.tourId);
+  const { tours, inventoryLive } = await getCatalog();
+  if (!inventoryLive) {
+    return { ok: false, error: DATES_UNAVAILABLE };
+  }
+
+  const tour = getTourFromCatalog(tours, input.tourId);
   if (!tour) {
     return { ok: false, error: "That route is no longer available." };
   }
@@ -146,8 +148,8 @@ export async function getCheckoutSessionSummary(
     let tourName: string | null = null;
     const tourId = session.metadata?.tour_id;
     if (tourId) {
-      const catalog = await getCatalogTours();
-      tourName = getTourFromCatalog(catalog, tourId)?.name ?? null;
+      const { tours } = await getCatalog();
+      tourName = getTourFromCatalog(tours, tourId)?.name ?? null;
     }
 
     return { paid, bookingId, tourName, email, totalThb };

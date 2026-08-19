@@ -5,7 +5,6 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
   formatPriceThb,
   parsePriceThbFromLabel,
-  type AvailableDate,
   type CatalogTourDate,
 } from "@/lib/db/types";
 
@@ -14,21 +13,40 @@ export type CatalogTour = Tour & {
   availableDates: CatalogTourDate[];
 };
 
+export type CatalogSnapshot = {
+  tours: CatalogTour[];
+  inventoryLive: boolean;
+};
+
 function buildFallbackCatalog(): CatalogTour[] {
   return staticTours.map((tour) => ({
     ...tour,
     priceThb: parsePriceThbFromLabel(tour.price),
-    availableDates: tour.demoDates.map((date) => ({
-      date,
-      spotsLeft: 20,
-      capacity: 20,
-    })),
+    availableDates: [],
+    demoDates: [],
   }));
 }
 
-export async function getCatalogTours(): Promise<CatalogTour[]> {
+function buildLiveCatalog(
+  priceById: Map<string, number>,
+  datesByTour: Map<string, CatalogTourDate[]>,
+): CatalogTour[] {
+  return staticTours.map((tour) => {
+    const priceThb = priceById.get(tour.id) ?? parsePriceThbFromLabel(tour.price);
+    const availableDates = datesByTour.get(tour.id) ?? [];
+    return {
+      ...tour,
+      price: formatPriceThb(priceThb),
+      priceThb,
+      availableDates,
+      demoDates: availableDates.map((d) => d.date),
+    };
+  });
+}
+
+export async function getCatalog(): Promise<CatalogSnapshot> {
   if (!isSupabaseConfigured()) {
-    return buildFallbackCatalog();
+    return { tours: buildFallbackCatalog(), inventoryLive: false };
   }
 
   try {
@@ -63,21 +81,17 @@ export async function getCatalogTours(): Promise<CatalogTour[]> {
       datesByTour.set(row.tour_id, list);
     }
 
-    return staticTours.map((tour) => {
-      const priceThb =
-        priceById.get(tour.id) ?? parsePriceThbFromLabel(tour.price);
-      const availableDates = datesByTour.get(tour.id) ?? [];
-      return {
-        ...tour,
-        price: formatPriceThb(priceThb),
-        priceThb,
-        availableDates,
-        demoDates: availableDates.map((d) => d.date),
-      };
-    });
+    return {
+      tours: buildLiveCatalog(priceById, datesByTour),
+      inventoryLive: true,
+    };
   } catch {
-    return buildFallbackCatalog();
+    return { tours: buildFallbackCatalog(), inventoryLive: false };
   }
+}
+
+export async function getCatalogTours(): Promise<CatalogTour[]> {
+  return (await getCatalog()).tours;
 }
 
 export function getTourFromCatalog(

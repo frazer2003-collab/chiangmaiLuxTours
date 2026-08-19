@@ -24,6 +24,7 @@ type BookingContextValue = {
 
 const BookingContext = createContext<BookingContextValue | null>(null);
 const CatalogContext = createContext<CatalogTour[]>([]);
+const InventoryLiveContext = createContext(false);
 
 export function useBooking() {
   const context = useContext(BookingContext);
@@ -37,24 +38,27 @@ export function useCatalogTours() {
   return useContext(CatalogContext);
 }
 
+export function useInventoryLive() {
+  return useContext(InventoryLiveContext);
+}
+
 function buildStaticCatalog(): CatalogTour[] {
   return staticTours.map((tour) => ({
     ...tour,
     priceThb: parsePriceThbFromLabel(tour.price),
-    availableDates: tour.demoDates.map((date) => ({
-      date,
-      spotsLeft: 20,
-      capacity: 20,
-    })),
+    availableDates: [],
+    demoDates: [],
   }));
 }
 
 export function BookingProvider({
   children,
   catalogTours,
+  inventoryLive = false,
 }: {
   children: ReactNode;
   catalogTours?: CatalogTour[];
+  inventoryLive?: boolean;
 }) {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingTourId, setBookingTourId] = useState<string | null>(null);
@@ -76,15 +80,17 @@ export function BookingProvider({
 
   return (
     <CatalogContext.Provider value={catalog}>
-      <BookingContext.Provider value={{ openBooking }}>
-        {children}
-        <BookingSheet
-          open={bookingOpen}
-          tourId={bookingTourId}
-          onClose={closeBooking}
-          returnFocusRef={returnFocusRef}
-        />
-      </BookingContext.Provider>
+      <InventoryLiveContext.Provider value={inventoryLive}>
+        <BookingContext.Provider value={{ openBooking }}>
+          {children}
+          <BookingSheet
+            open={bookingOpen}
+            tourId={bookingTourId}
+            onClose={closeBooking}
+            returnFocusRef={returnFocusRef}
+          />
+        </BookingContext.Provider>
+      </InventoryLiveContext.Provider>
     </CatalogContext.Provider>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import { IconClose } from "./icons";
-import { useCatalogTours } from "@/components/booking/BookingProvider";
+import { IconChevron, IconClose } from "./icons";
+import { useCatalogTours, useInventoryLive } from "@/components/booking/BookingProvider";
 import { getTourFromCatalog } from "@/lib/tour-catalog";
 import { submitBooking } from "@/lib/actions/booking";
 import { startStripeCheckout } from "@/lib/actions/checkout";
@@ -12,6 +12,7 @@ import { formatThbTotal } from "@/lib/stripe/env";
 import {
   validateDate,
   validateEmail,
+  validateGuestIdentity,
   validatePassengerForms,
   formatGuestFullName,
 } from "@/lib/booking-validation";
@@ -22,6 +23,14 @@ import {
 } from "@/lib/booking-passengers";
 import { PassengerIdentityFields } from "@/components/PassengerIdentityFields";
 import type { BookingStep } from "@/lib/types";
+import { CONTACT, whatsappHref } from "@/lib/types";
+import {
+  CHANGE_CANCEL_SUMMARY,
+  DATES_UNAVAILABLE,
+  PASSPORT_PRIVACY_SUMMARY,
+  PAY_NOW_HOLD,
+} from "@/lib/guest-legal";
+import Link from "next/link";
 
 type Props = {
   open: boolean;
@@ -36,9 +45,10 @@ const FOCUSABLE_SELECTOR =
 
 export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const catalog = useCatalogTours();
+  const inventoryLive = useInventoryLive();
   const tour = tourId ? getTourFromCatalog(catalog, tourId) : undefined;
-  const canBookOnline = isSupabasePublicConfigured();
-  const canPayOnline = isStripePublicConfigured();
+  const canBookOnline = isSupabasePublicConfigured() && inventoryLive;
+  const canPayOnline = isStripePublicConfigured() && inventoryLive;
   const allowedDates = tour?.demoDates ?? [];
   const dateAvailability = tour?.availableDates ?? [];
 
@@ -52,6 +62,8 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
   const [showErrors, setShowErrors] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [bookingId, setBookingId] = useState<string | null>(null);
+  const [openCompanions, setOpenCompanions] = useState<number[]>([]);
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -90,6 +102,8 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
       setShowErrors(false);
       setSubmitError(null);
       setSubmitting(false);
+      setBookingId(null);
+      setOpenCompanions([]);
     }
   }, [open, tourId]);
 
@@ -229,6 +243,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
       return;
     }
 
+    setBookingId(result.bookingId);
     setStep("confirmed");
   }
 
@@ -246,6 +261,14 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
     if (step === "details") {
       if (detailsValidationError) {
         setShowErrors(true);
+        const invalidCompanions = passengerForms
+          .slice(1, passengers)
+          .flatMap((form, offset) =>
+            validateGuestIdentity(form) ? [offset + 1] : [],
+          );
+        setOpenCompanions((prev) => [
+          ...new Set([...prev, ...invalidCompanions]),
+        ]);
         return;
       }
       setShowErrors(false);
@@ -266,6 +289,15 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
 
   const passengerOptions = Array.from({ length: maxPassengers }, (_, i) => i + 1);
 
+  function updatePassenger(index: number, next: PassengerFormState) {
+    setPassengerForms((prev) => {
+      const copy = [...prev];
+      copy[index] = next;
+      return copy;
+    });
+    if (showErrors) setShowErrors(false);
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
       <button
@@ -284,7 +316,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
         <div className="flex items-start justify-between gap-4 border-b border-[var(--river-blue)]/15 px-5 py-4">
           <div className="min-w-0">
             <p className="font-[family-name:var(--font-chart)] text-xs uppercase tracking-[0.18em] text-[var(--river-blue)]">
-              Chart booking · Step {Math.min(stepIndex + 1, 4)} of 4
+              Booking · Step {Math.min(stepIndex + 1, 4)} of 4
             </p>
             <h2
               id="booking-title"
@@ -308,16 +340,27 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
           {step === "date" && (
             <div className="space-y-4">
               {allowedDates.length === 0 ? (
-                <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                  No departure dates are open for this route right now. Contact us by phone or
-                  email to enquire.
-                </p>
+                <div className="space-y-3">
+                  <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
+                    {inventoryLive
+                      ? "No departure dates are open for this route right now. WhatsApp or email us to enquire."
+                      : DATES_UNAVAILABLE}
+                  </p>
+                  <a
+                    href={whatsappHref(
+                      tour
+                        ? `Hello Mekong Transfer — I want to book ${tour.name}.`
+                        : undefined,
+                    )}
+                    className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--river-blue)] underline-offset-2 hover:underline"
+                  >
+                    WhatsApp {CONTACT.phones[0]}
+                  </a>
+                </div>
               ) : (
                 <>
                   <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                    {canBookOnline
-                      ? "Choose an available departure. Seats update in real time."
-                      : "Demo dates only — connect Supabase admin for live availability."}
+                    Choose an open departure. Remaining seats come from the live calendar.
                   </p>
                   <fieldset>
                     <legend className="mb-2 text-sm font-medium text-[var(--ink)]">
@@ -385,7 +428,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
           )}
 
           {step === "details" && (
-            <div className="space-y-4">
+            <div className="space-y-8">
               <div>
                 <label htmlFor="passengers" className="mb-1.5 block text-sm font-medium">
                   Passengers
@@ -399,6 +442,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                       Math.max(1, Number(e.target.value)),
                     );
                     setPassengers(count);
+                    setOpenCompanions((prev) => prev.filter((index) => index < count));
                     if (showErrors) setShowErrors(false);
                   }}
                   className={fieldClass}
@@ -411,65 +455,93 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                 </select>
               </div>
 
-              <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                Enter passport details for every passenger. Required for border manifest.
-              </p>
-
-              {passengerForms.slice(0, passengers).map((passenger, index) => (
-                <div
-                  key={index}
-                  className="rounded-xl border border-[var(--river-blue)]/15 bg-white/70 p-4"
-                >
-                  <p className="text-sm font-semibold text-[var(--ink)]">
-                    Passenger {index + 1}
-                    {index === 0 ? " · Lead guest" : ""}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-base font-semibold text-[var(--ink)]">Lead guest</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-[var(--ink-muted)]">
+                    Passport details for the border crossing.
                   </p>
-                  <div className="mt-4">
-                    <PassengerIdentityFields
-                      index={index}
-                      value={passenger}
-                      showErrors={showErrors}
-                      onChange={(next) => {
-                        setPassengerForms((prev) => {
-                          const copy = [...prev];
-                          copy[index] = next;
-                          return copy;
-                        });
-                        if (showErrors) setShowErrors(false);
-                      }}
-                    />
-                  </div>
                 </div>
-              ))}
-
-              <div>
-                <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
-                  Email for confirmation
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  inputMode="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (showErrors) setShowErrors(false);
-                  }}
-                  aria-invalid={emailError ? true : undefined}
-                  aria-describedby={emailError ? emailErrorId : undefined}
-                  className={fieldClass}
+                <PassengerIdentityFields
+                  index={0}
+                  value={passengerForms[0] ?? emptyPassengerForm()}
+                  showErrors={showErrors}
+                  onChange={(next) => updatePassenger(0, next)}
                 />
-                {emailError ? (
-                  <p
-                    id={emailErrorId}
-                    role="alert"
-                    className="mt-1.5 text-sm text-[var(--river-blue-deep)]"
-                  >
-                    {emailError}
-                  </p>
-                ) : null}
+                <div>
+                  <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
+                    Confirmation email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (showErrors) setShowErrors(false);
+                    }}
+                    aria-invalid={emailError ? true : undefined}
+                    aria-describedby={emailError ? emailErrorId : undefined}
+                    className={fieldClass}
+                  />
+                  {emailError ? (
+                    <p
+                      id={emailErrorId}
+                      role="alert"
+                      className="mt-1.5 text-sm text-[var(--river-blue-deep)]"
+                    >
+                      {emailError}
+                    </p>
+                  ) : null}
+                </div>
               </div>
+
+              {passengers > 1 ? (
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-[var(--ink)]">
+                    Other passengers
+                  </h3>
+                  {passengerForms.slice(1, passengers).map((passenger, offset) => {
+                    const index = offset + 1;
+                    const summaryName =
+                      formatGuestFullName(passenger.familyName, passenger.givenName) ||
+                      `Passenger ${index + 1}`;
+                    const open = openCompanions.includes(index);
+                    return (
+                      <details
+                        key={index}
+                        open={open}
+                        onToggle={(event) => {
+                          const nextOpen = event.currentTarget.open;
+                          setOpenCompanions((prev) => {
+                            const has = prev.includes(index);
+                            if (nextOpen === has) return prev;
+                            return nextOpen
+                              ? [...prev, index]
+                              : prev.filter((item) => item !== index);
+                          });
+                        }}
+                        className="group rounded-2xl border border-[var(--river-blue)]/15 bg-white px-4 py-3"
+                      >
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg py-1 font-medium text-[var(--ink)] marker:content-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] [&::-webkit-details-marker]:hidden">
+                          <span>{summaryName}</span>
+                          <IconChevron className="h-4 w-4 shrink-0 text-[var(--river-blue)] transition group-open:rotate-180" />
+                        </summary>
+                        <div className="mt-4">
+                          <PassengerIdentityFields
+                            index={index}
+                            value={passenger}
+                            showErrors={showErrors}
+                            onChange={(next) => updatePassenger(index, next)}
+                          />
+                        </div>
+                      </details>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
           )}
 
@@ -479,21 +551,56 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                 <div className="rounded-xl border border-[var(--river-blue)]/20 bg-white p-4">
                   <p className="text-sm font-medium text-[var(--ink)]">Secure payment</p>
                   <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
-                    Pay with international cards, Apple Pay, or Thai PromptPay. You will complete
-                    checkout on Stripe&apos;s secure page.
+                    Pay with international cards or Thai PromptPay on Stripe&apos;s secure page.
+                    Apple Pay can appear on supported devices.
                   </p>
                   <ul className="mt-3 space-y-1.5 text-xs text-[var(--ink-muted)]">
-                    <li>Visa, Mastercard, Amex, and other international cards</li>
-                    <li>Apple Pay (Safari and supported devices)</li>
+                    <li>Visa, Mastercard, Amex, and other cards</li>
                     <li>PromptPay for Thai bank apps</li>
+                    <li>Apple Pay may appear on supported devices</li>
                   </ul>
+                  <p className="mt-3 text-sm leading-relaxed text-[var(--ink-muted)]">
+                    {PAY_NOW_HOLD} {CHANGE_CANCEL_SUMMARY}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
+                    {PASSPORT_PRIVACY_SUMMARY}
+                  </p>
+                  <p className="mt-3 text-xs text-[var(--ink-muted)]">
+                    <Link
+                      href="/booking-terms"
+                      className="font-medium text-[var(--river-blue)] underline-offset-2 hover:underline"
+                    >
+                      Booking terms
+                    </Link>
+                    {" · "}
+                    <Link
+                      href="/privacy"
+                      className="font-medium text-[var(--river-blue)] underline-offset-2 hover:underline"
+                    >
+                      Privacy
+                    </Link>
+                  </p>
                 </div>
               ) : (
                 <div className="rounded-xl border border-dashed border-[var(--river-blue)]/35 bg-white p-4">
-                  <p className="text-sm font-medium text-[var(--ink)]">Payment not connected</p>
-                  <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
-                    Online payment is not configured yet. Contact us by phone or email to reserve.
+                  <p className="text-sm font-medium text-[var(--ink)]">
+                    {inventoryLive ? "Payment not connected" : "Online booking paused"}
                   </p>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">
+                    {inventoryLive
+                      ? "Online payment is not configured yet. WhatsApp or email us to reserve."
+                      : DATES_UNAVAILABLE}
+                  </p>
+                  <a
+                    href={whatsappHref(
+                      tour
+                        ? `Hello Mekong Transfer — I want to book ${tour.name}.`
+                        : undefined,
+                    )}
+                    className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--river-blue)] underline-offset-2 hover:underline"
+                  >
+                    WhatsApp {CONTACT.phones[0]}
+                  </a>
                 </div>
               )}
               <dl className="space-y-2 rounded-xl bg-[var(--river-blue)]/6 p-4 text-sm">
@@ -549,21 +656,29 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-[var(--ink)]">Booking recorded</h3>
+              {bookingId ? (
+                <p className="break-all text-sm font-medium text-[var(--ink)]">
+                  Reference {bookingId}
+                </p>
+              ) : null}
               <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
-                {canBookOnline ? (
+                Screenshot this reference. WhatsApp us with it so we can confirm your seats
+                {email ? (
                   <>
-                    Your request is saved. Confirmation email to{" "}
-                    <strong className="text-[var(--ink)]">{email}</strong> will follow when
-                    transactional email is connected.
+                    {" "}
+                    — we also have <strong className="text-[var(--ink)]">{email}</strong>
                   </>
-                ) : (
-                  <>
-                    Placeholder confirmation — email to{" "}
-                    <strong className="text-[var(--ink)]">{email}</strong> will be sent when
-                    booking storage is connected.
-                  </>
-                )}
+                ) : null}
+                .
               </p>
+              <a
+                href={whatsappHref(
+                  `Hello Mekong Transfer — booking ${bookingId ?? "request"} for ${tour.name}.`,
+                )}
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--marker-yellow)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] hover:brightness-95"
+              >
+                WhatsApp {CONTACT.phones[0]}
+              </a>
             </div>
           )}
         </div>

@@ -47,6 +47,19 @@ export const CONTACT = {
   licence: "21/01279",
 } as const;
 
+/** Thai +66 (0) numbers store a trunk 0 that WhatsApp must drop. */
+export function whatsappDigits(phone: string): string {
+  let digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("660")) digits = `66${digits.slice(3)}`;
+  return digits;
+}
+
+export function whatsappHref(message?: string): string {
+  const base = `https://wa.me/${whatsappDigits(CONTACT.phones[0])}`;
+  if (!message) return base;
+  return `${base}?text=${encodeURIComponent(message)}`;
+}
+
 export const SHARED_TOUR_INTRO =
   "Glide down the Mekong River on a special slow boat journey to Luang Prabang. Relax and enjoy the stunning scenery, riverside life and unforgettable experiences along the way.";
 
@@ -73,7 +86,7 @@ export const SHARED_PERFECT_FOR =
   "Scenery lovers, photographers & slow travellers";
 
 export const SHARED_DURATION_DETAIL =
-  "Approx. 8–10 hrs · varies by season";
+  "About 8–10 hours on the river, depending on the season";
 
 export const SHARED_INCLUDES = [
   "Hotel transfer included",

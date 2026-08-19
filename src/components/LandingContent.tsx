@@ -4,19 +4,19 @@ import { RiverRoutesSection } from "@/components/RiverRoutesSection";
 import { RoutePhoto } from "@/components/RoutePhoto";
 import { IconChevron, IconMapPin, IconShield } from "@/components/icons";
 import { btnNavPill } from "@/lib/guest-ui";
-import { CONTACT } from "@/lib/tours";
-import { SHARED_TOUR_INTRO } from "@/lib/types";
+import { CONTACT, SHARED_TOUR_INTRO, whatsappHref } from "@/lib/types";
 import type { CatalogTour } from "@/lib/tour-catalog";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { isStripePublicConfigured } from "@/lib/stripe/env";
+import { CHANGE_CANCEL_FAQ } from "@/lib/guest-legal";
 
 export function LandingContent({
   catalogTours,
+  inventoryLive,
 }: {
   catalogTours: CatalogTour[];
+  inventoryLive: boolean;
 }) {
   const tours = catalogTours;
-  const liveDates = isSupabaseConfigured();
   const stripePay = isStripePublicConfigured();
 
   const hubs = tours.map((tour) => ({
@@ -32,15 +32,19 @@ export function LandingContent({
   },
   {
     q: "Are dates flexible?",
-    a: liveDates
+    a: inventoryLive
       ? "Available departure dates are shown when you book each route. Seats are limited — choose an open date in the booking flow."
-      : "Demo dates are shown for layout only. Live availability will appear once admin is connected.",
+      : "Open dates could not be loaded right now. WhatsApp or email us to confirm a departure.",
   },
   {
     q: "Is payment secure?",
     a: stripePay
-      ? "Yes. Checkout runs on Stripe with international cards, Apple Pay, and Thai PromptPay. We never store your card details."
+      ? "Yes. Stripe Checkout takes cards and Thai PromptPay. We never store your card details. Apple Pay can appear on supported devices."
       : "Online payment will be processed securely via Stripe once connected. Until then, contact us to reserve.",
+  },
+  {
+    q: "Can I change or cancel?",
+    a: CHANGE_CANCEL_FAQ,
   },
   {
     q: "Where do I meet the boat?",
@@ -136,12 +140,12 @@ export function LandingContent({
               ["Select route", "Pick your hub — Chiang Mai, Chiang Rai, Chiang Khong, or Huay Xai."],
               [
                 "Choose date",
-                liveDates
-                  ? "Pick an open departure from live availability."
-                  : "Demo dates shown until admin calendar is live.",
+                inventoryLive
+                  ? "Pick an open departure from the live calendar."
+                  : "WhatsApp us to confirm a departure — open dates are not listed right now.",
               ],
               ["Enter details", "Passport details for every passenger, plus confirmation email."],
-              ["Pay online", stripePay ? "Card, Apple Pay, or PromptPay via Stripe Checkout." : "Placeholder checkout until Stripe is connected."],
+              ["Pay online", stripePay ? "Cards and PromptPay via Stripe. Apple Pay can appear on supported devices." : "Placeholder checkout until Stripe is connected."],
             ].map(([title, body]) => (
               <li key={title} className="rounded-2xl border border-[var(--river-blue)]/15 bg-white p-5">
                 <h3 className="font-semibold text-[var(--ink)]">{title}</h3>
@@ -220,10 +224,10 @@ export function LandingContent({
           <div>
             <p className="text-sm font-semibold text-white/90">Mobile &amp; WhatsApp</p>
             <ul className="mt-2 space-y-1 text-sm text-white/75">
-              {CONTACT.phones.map((phone) => (
+              {CONTACT.phones.map((phone, index) => (
                 <li key={phone}>
                   <a
-                    href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+                    href={index === 0 ? whatsappHref() : `tel:${phone.replace(/[^\d+]/g, "")}`}
                     className="hover:text-[var(--marker-yellow)]"
                   >
                     {phone}
@@ -238,6 +242,14 @@ export function LandingContent({
             >
               {CONTACT.email}
             </a>
+            <nav className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/75" aria-label="Legal">
+              <Link href="/booking-terms" className="hover:text-[var(--marker-yellow)]">
+                Booking terms
+              </Link>
+              <Link href="/privacy" className="hover:text-[var(--marker-yellow)]">
+                Privacy
+              </Link>
+            </nav>
           </div>
           <p className="text-sm leading-relaxed text-white/65 sm:col-span-2 lg:col-span-1">
             Experience the Real Laos — premium slow boat routes from Chiang Mai, Chiang Rai,

@@ -32,6 +32,9 @@ export function TourDetailPanel({ tour }: { tour: CatalogTour }) {
           <p className="mt-1 text-sm font-medium text-[var(--river-blue)]">
             {tour.duration} · {tour.price}
           </p>
+          <p className="mt-1 text-sm leading-relaxed text-[var(--ink-muted)]">
+            {tour.durationDetail}
+          </p>
 
           {tour.overnightNote && (
             <p className="mt-4 rounded-xl border border-[var(--marker-yellow)]/40 bg-[var(--marker-yellow)]/10 px-4 py-3 text-sm leading-relaxed text-[var(--ink)]">

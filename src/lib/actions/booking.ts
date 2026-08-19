@@ -12,6 +12,8 @@ import { toStoredPassengerDetail } from "@/lib/booking-passengers";
 import type { PassengerFormState } from "@/lib/booking-passengers";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getCatalog, getTourFromCatalog } from "@/lib/tour-catalog";
+import { BOOKING_SAVE_FAILED, DATES_UNAVAILABLE } from "@/lib/guest-legal";
 
 export type SubmitBookingResult =
   | { ok: true; bookingId: string }
@@ -35,7 +37,7 @@ function mapBookingRpcError(message: string): string | null {
     message.includes("does not exist") ||
     message.includes("PGRST202")
   ) {
-    return "Booking database is out of date. Run Supabase migrations through 20260809120000_booking_all_passengers.sql in the SQL editor.";
+    return BOOKING_SAVE_FAILED;
   }
   return null;
 }
@@ -48,7 +50,18 @@ export async function submitBooking(input: {
   email: string;
   allowedDates: string[];
 }): Promise<SubmitBookingResult> {
-  const dateError = validateDate(input.date, input.allowedDates);
+  const catalog = await getCatalog();
+  if (!catalog.inventoryLive) {
+    return { ok: false, error: DATES_UNAVAILABLE };
+  }
+
+  const tour = getTourFromCatalog(catalog.tours, input.tourId);
+  if (!tour) {
+    return { ok: false, error: "That route is no longer available." };
+  }
+
+  const liveDates = tour.availableDates.map((slot) => slot.date);
+  const dateError = validateDate(input.date, liveDates);
   if (dateError) return { ok: false, error: dateError };
 
   const passengerCount = Math.min(12, Math.max(1, Math.floor(input.passengers)));
@@ -77,11 +90,7 @@ export async function submitBooking(input: {
   const guestEmail = normalizeEmail(input.email);
 
   if (!isSupabaseConfigured()) {
-    return {
-      ok: false,
-      error:
-        "Live booking is not configured yet. Contact us by phone or email to reserve.",
-    };
+    return { ok: false, error: DATES_UNAVAILABLE };
   }
 
   try {
@@ -98,12 +107,12 @@ export async function submitBooking(input: {
       console.error("create_booking RPC failed:", error.message, error.code);
       return {
         ok: false,
-        error: mapBookingRpcError(error.message) ?? "Could not save booking. Please try again.",
+        error: mapBookingRpcError(error.message) ?? BOOKING_SAVE_FAILED,
       };
     }
 
     if (data == null) {
-      return { ok: false, error: "Could not save booking. Please try again." };
+      return { ok: false, error: BOOKING_SAVE_FAILED };
     }
 
     return { ok: true, bookingId: String(data) };
@@ -112,9 +121,9 @@ export async function submitBooking(input: {
     if (error instanceof Error && error.message.includes("Supabase service role")) {
       return {
         ok: false,
-        error: "Live booking is not configured yet. Contact us by phone or email to reserve.",
+        error: DATES_UNAVAILABLE,
       };
     }
-    return { ok: false, error: "Could not save booking. Please try again." };
+    return { ok: false, error: BOOKING_SAVE_FAILED };
   }
 }

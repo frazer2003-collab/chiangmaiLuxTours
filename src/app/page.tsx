@@ -2,17 +2,17 @@ import { Suspense } from "react";
 import { BookingProvider } from "@/components/booking/BookingProvider";
 import { BookingCancelledNotice } from "@/components/booking/BookingCancelledNotice";
 import { LandingContent } from "@/components/LandingContent";
-import { getCatalogTours } from "@/lib/tour-catalog";
+import { getCatalog } from "@/lib/tour-catalog";
 
 export default async function Home() {
-  const catalogTours = await getCatalogTours();
+  const { tours, inventoryLive } = await getCatalog();
 
   return (
-    <BookingProvider catalogTours={catalogTours}>
+    <BookingProvider catalogTours={tours} inventoryLive={inventoryLive}>
       <Suspense fallback={null}>
         <BookingCancelledNotice />
       </Suspense>
-      <LandingContent catalogTours={catalogTours} />
+      <LandingContent catalogTours={tours} inventoryLive={inventoryLive} />
     </BookingProvider>
   );
 }
