@@ -19,11 +19,17 @@ export function LandingContent({
   const tours = catalogTours;
   const stripePay = isStripePublicConfigured();
 
-  const hubs = tours.map((tour) => ({
-    name: tour.from === "Huay Xai" ? "Huay Xai Village" : tour.from,
-    note: tour.meetingPoint,
-    price: tour.price,
-  }));
+  const hubs = Array.from(
+    tours
+      .reduce((map, tour) => {
+        const name = tour.from === "Huay Xai" ? "Huay Xai Village" : tour.from;
+        if (!map.has(name)) {
+          map.set(name, { name, note: tour.meetingPoint, price: tour.price });
+        }
+        return map;
+      }, new Map<string, { name: string; note: string; price: string }>())
+      .values(),
+  );
 
   const faqs = [
   {

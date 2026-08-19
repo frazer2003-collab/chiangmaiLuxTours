@@ -151,7 +151,7 @@ export const tours: Tour[] = [
     perfectFor: "Travellers who want the classic two-day Mekong slow boat experience",
     overnightNote:
       "Overnight in Pakbeng is not included. You arrange your own accommodation in Pakbeng and rejoin the slow boat the next morning.",
-    price: "Contact us",
+    price: "฿1,690 / person",
     meetingPoint: "Chiang Rai — hotel pickup at 5:00 am",
     highlights: [
       "Van + local slow boat · 2 days · 1 night",
@@ -205,7 +205,7 @@ export const tours: Tour[] = [
     from: "Chiang Rai",
     to: "Luang Prabang",
     perfectFor: "Travellers who prefer speed and want to reach Luang Prabang, Vang Vieng, or Vientiane by train",
-    price: "Contact us",
+    price: "฿1,800 / person",
     meetingPoint: "Chiang Rai — hotel pickup at 5:00 am",
     highlights: [
       "Van + van + Train K11 · 1 day",
