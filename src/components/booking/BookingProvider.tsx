@@ -43,12 +43,14 @@ export function useInventoryLive() {
 }
 
 function buildStaticCatalog(): CatalogTour[] {
-  return staticTours.map((tour) => ({
-    ...tour,
-    priceThb: parsePriceThbFromLabel(tour.price),
-    availableDates: [],
-    demoDates: [],
-  }));
+  return [...staticTours]
+    .sort((a, b) => a.chartPosition - b.chartPosition)
+    .map((tour) => ({
+      ...tour,
+      priceThb: parsePriceThbFromLabel(tour.price),
+      availableDates: [],
+      demoDates: [],
+    }));
 }
 
 export function BookingProvider({

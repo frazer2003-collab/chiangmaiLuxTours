@@ -18,30 +18,38 @@ export type CatalogSnapshot = {
   inventoryLive: boolean;
 };
 
+function sortByChartPosition(tours: CatalogTour[]): CatalogTour[] {
+  return [...tours].sort((a, b) => a.chartPosition - b.chartPosition);
+}
+
 function buildFallbackCatalog(): CatalogTour[] {
-  return staticTours.map((tour) => ({
-    ...tour,
-    priceThb: parsePriceThbFromLabel(tour.price),
-    availableDates: [],
-    demoDates: [],
-  }));
+  return sortByChartPosition(
+    staticTours.map((tour) => ({
+      ...tour,
+      priceThb: parsePriceThbFromLabel(tour.price),
+      availableDates: [],
+      demoDates: [],
+    })),
+  );
 }
 
 function buildLiveCatalog(
   priceById: Map<string, number>,
   datesByTour: Map<string, CatalogTourDate[]>,
 ): CatalogTour[] {
-  return staticTours.map((tour) => {
-    const priceThb = priceById.get(tour.id) ?? parsePriceThbFromLabel(tour.price);
-    const availableDates = datesByTour.get(tour.id) ?? [];
-    return {
-      ...tour,
-      price: formatPriceThb(priceThb),
-      priceThb,
-      availableDates,
-      demoDates: availableDates.map((d) => d.date),
-    };
-  });
+  return sortByChartPosition(
+    staticTours.map((tour) => {
+      const priceThb = priceById.get(tour.id) ?? parsePriceThbFromLabel(tour.price);
+      const availableDates = datesByTour.get(tour.id) ?? [];
+      return {
+        ...tour,
+        price: formatPriceThb(priceThb),
+        priceThb,
+        availableDates,
+        demoDates: availableDates.map((d) => d.date),
+      };
+    }),
+  );
 }
 
 export async function getCatalog(): Promise<CatalogSnapshot> {

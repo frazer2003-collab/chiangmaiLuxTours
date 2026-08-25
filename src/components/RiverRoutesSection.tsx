@@ -8,9 +8,11 @@ import { IconChevron } from "@/components/icons";
 import { BOOK_ROUTE_LABEL, anchorSection, btnBookRoute } from "@/lib/guest-ui";
 import type { CatalogTour } from "@/lib/tour-catalog";
 
-function hubShort(from: string): string {
-  if (from === "Huay Xai") return "Huay Xai";
-  return from;
+function chartHubLabel(tour: CatalogTour): string {
+  if (tour.id === "chiang-rai-slowboat-luang-prabang") return "Chiang Rai · Slow boat";
+  if (tour.id === "chiang-rai-train-luang-prabang") return "Chiang Rai · Train";
+  if (tour.from === "Huay Xai") return "Huay Xai";
+  return tour.from;
 }
 
 export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
@@ -151,7 +153,7 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
                             isSelected ? "text-[var(--ink)]" : "text-[var(--ink-muted)]"
                           }`}
                         >
-                          {hubShort(tour.from)}
+                          {chartHubLabel(tour)}
                         </span>
                         <span className="block truncate text-xs leading-tight text-[var(--ink-muted)]">
                           {tour.duration}
