@@ -134,7 +134,7 @@ export function LandingContent({
         </div>
       </section>
 
-      <RiverRoutesSection tours={tours} />
+      <RiverRoutesSection tours={tours} inventoryLive={inventoryLive} />
 
       <section className="border-b border-[var(--river-blue)]/10 bg-[var(--chart-paper)] py-12 sm:py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">

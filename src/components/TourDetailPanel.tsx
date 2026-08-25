@@ -2,10 +2,18 @@
 
 import { BookTourButton } from "@/components/booking/BookTourButton";
 import { RoutePhoto } from "@/components/RoutePhoto";
-import { BOOK_ROUTE_LABEL, anchorSection, btnBookRoute } from "@/lib/guest-ui";
+import { TourTierBadge } from "@/components/TourTierBadge";
+import { anchorSection, btnBookRoute } from "@/lib/guest-ui";
+import { getBookRouteLabel, isTourBookableOnline } from "@/lib/tour-display";
 import type { CatalogTour } from "@/lib/tour-catalog";
 
-export function TourDetailPanel({ tour }: { tour: CatalogTour }) {
+export function TourDetailPanel({
+  tour,
+  inventoryLive,
+}: {
+  tour: CatalogTour;
+  inventoryLive: boolean;
+}) {
   const gallery = tour.gallery ?? [];
 
   return (
@@ -22,9 +30,10 @@ export function TourDetailPanel({ tour }: { tour: CatalogTour }) {
             className="mb-6 aspect-[16/10] rounded-2xl"
             sizes="(min-width: 1024px) 55vw, 100vw"
           />
+          <TourTierBadge tourId={tour.id} />
           <h3
             id="route-detail-title"
-            className="font-[family-name:var(--font-chart)] text-2xl tracking-[-0.02em] text-[var(--ink)] sm:text-3xl"
+            className="mt-2 font-[family-name:var(--font-chart)] text-2xl tracking-[-0.02em] text-[var(--ink)] sm:text-3xl"
           >
             {tour.name}
           </h3>
@@ -82,8 +91,13 @@ export function TourDetailPanel({ tour }: { tour: CatalogTour }) {
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <BookTourButton tourId={tour.id} className={`mt-6 ${btnBookRoute}`}>
-            {BOOK_ROUTE_LABEL}
+          <BookTourButton
+            tourId={tour.id}
+            tourName={tour.name}
+            bookable={isTourBookableOnline(tour, inventoryLive)}
+            className={`mt-6 ${btnBookRoute}`}
+          >
+            {getBookRouteLabel(tour, inventoryLive)}
           </BookTourButton>
         </aside>
       </div>

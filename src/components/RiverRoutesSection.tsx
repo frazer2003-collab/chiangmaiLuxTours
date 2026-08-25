@@ -3,19 +3,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BookTourButton } from "@/components/booking/BookTourButton";
 import { TourDetailPanel } from "@/components/TourDetailPanel";
+import { TourTierBadge } from "@/components/TourTierBadge";
 import { RoutePhoto } from "@/components/RoutePhoto";
 import { IconChevron } from "@/components/icons";
-import { BOOK_ROUTE_LABEL, anchorSection, btnBookRoute } from "@/lib/guest-ui";
+import { btnBookRoute } from "@/lib/guest-ui";
+import {
+  chartDotLabel,
+  chartHubLabel,
+  getBookRouteLabel,
+  isTourBookableOnline,
+} from "@/lib/tour-display";
 import type { CatalogTour } from "@/lib/tour-catalog";
 
-function chartHubLabel(tour: CatalogTour): string {
-  if (tour.id === "chiang-rai-slowboat-luang-prabang") return "Chiang Rai · Slow boat";
-  if (tour.id === "chiang-rai-train-luang-prabang") return "Chiang Rai · Train";
-  if (tour.from === "Huay Xai") return "Huay Xai";
-  return tour.from;
-}
-
-export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
+export function RiverRoutesSection({
+  tours,
+  inventoryLive,
+}: {
+  tours: CatalogTour[];
+  inventoryLive: boolean;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
   const [selectedId, setSelectedId] = useState(tours[0]?.id ?? "");
@@ -73,7 +79,7 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
   return (
     <section
       id="tours"
-      className={`relative border-b border-[var(--river-blue)]/10 bg-[var(--chart-paper)] py-12 sm:py-16 ${anchorSection}`}
+      className={`relative border-b border-[var(--river-blue)]/10 bg-[var(--chart-paper)] py-12 sm:py-16 scroll-mt-[4.75rem]`}
     >
       <div className="chart-grid absolute inset-0 opacity-[0.35]" aria-hidden />
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
@@ -87,35 +93,65 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
         </div>
 
         <div
-          className="mb-10 hidden md:block"
+          className="mb-6 hidden md:block"
           role="tablist"
           aria-label="Route chart"
         >
-          <div className="relative h-2 rounded-full bg-[var(--river-blue)]/10">
+          <div className="relative pb-8">
+            <div className="relative h-2 rounded-full bg-[var(--river-blue)]/10">
+              {tours.map((tour) => {
+                const isSelected = tour.id === selectedId;
+                const left = `${((tour.chartPosition - 1) / Math.max(tours.length - 1, 1)) * 84 + 8}%`;
+                return (
+                  <button
+                    key={tour.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    aria-label={`Route ${tour.chartPosition}: ${tour.name}`}
+                    onClick={() => {
+                      setSelectedId(tour.id);
+                      scrollToTour(tour.id);
+                    }}
+                    className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-[var(--chart-paper)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
+                    style={{
+                      left,
+                      backgroundColor: isSelected
+                        ? "var(--marker-yellow)"
+                        : "color-mix(in srgb, var(--river-blue) 35%, white)",
+                    }}
+                  />
+                );
+              })}
+            </div>
             {tours.map((tour) => {
               const isSelected = tour.id === selectedId;
+              const left = `${((tour.chartPosition - 1) / Math.max(tours.length - 1, 1)) * 84 + 8}%`;
               return (
                 <button
-                  key={tour.id}
+                  key={`${tour.id}-label`}
                   type="button"
-                  role="tab"
-                  aria-selected={isSelected}
-                  aria-label={`Route ${tour.chartPosition}: ${tour.name}`}
                   onClick={() => {
                     setSelectedId(tour.id);
                     scrollToTour(tour.id);
                   }}
-                  className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-[var(--chart-paper)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
-                  style={{
-                    left: `${((tour.chartPosition - 1) / Math.max(tours.length - 1, 1)) * 84 + 8}%`,
-                    backgroundColor: isSelected
-                      ? "var(--marker-yellow)"
-                      : "color-mix(in srgb, var(--river-blue) 35%, white)",
-                  }}
-                />
+                  className={`absolute top-4 max-w-[5.5rem] -translate-x-1/2 text-center text-[10px] leading-tight transition ${
+                    isSelected
+                      ? "font-semibold text-[var(--ink)]"
+                      : "font-medium text-[var(--ink-muted)] hover:text-[var(--ink)]"
+                  }`}
+                  style={{ left }}
+                >
+                  {chartDotLabel(tour)}
+                </button>
               );
             })}
           </div>
+          {selectedTour ? (
+            <p className="text-sm font-medium text-[var(--river-blue)]" aria-live="polite">
+              Viewing: {selectedTour.name}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex gap-3 md:block">
@@ -183,7 +219,7 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
                 className="mb-3 text-xs font-medium text-[var(--river-blue)] md:hidden"
                 aria-live="polite"
               >
-                Viewing: {selectedTour.from} → Luang Prabang
+                Route {selectedTour.chartPosition} of {tours.length} · {selectedTour.name}
               </p>
             )}
 
@@ -225,7 +261,8 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
                         </span>
                       </div>
                       <div className="flex flex-1 flex-col p-4 sm:p-5">
-                        <h3 className="text-lg font-semibold leading-snug text-[var(--ink)]">
+                        <TourTierBadge tourId={tour.id} />
+                        <h3 className="mt-2 text-lg font-semibold leading-snug text-[var(--ink)]">
                           {tour.name}
                         </h3>
                         <p className="mt-1 text-sm leading-relaxed text-[var(--ink-muted)]">
@@ -237,8 +274,13 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
                         <p className="mt-2 text-base font-semibold text-[var(--ink)]">
                           {tour.price}
                         </p>
-                        <BookTourButton tourId={tour.id} className={`mt-5 ${btnBookRoute}`}>
-                          {BOOK_ROUTE_LABEL}
+                        <BookTourButton
+                          tourId={tour.id}
+                          tourName={tour.name}
+                          bookable={isTourBookableOnline(tour, inventoryLive)}
+                          className={`mt-5 ${btnBookRoute}`}
+                        >
+                          {getBookRouteLabel(tour, inventoryLive)}
                         </BookTourButton>
                       </div>
                     </div>
@@ -254,16 +296,17 @@ export function RiverRoutesSection({ tours }: { tours: CatalogTour[] }) {
             {!hasScrolled && tours.length > 1 && (
               <p
                 className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[var(--ink-muted)] md:hidden"
-                aria-hidden
               >
-                Swipe for more routes
+                {tours.length} routes — swipe to compare
                 <IconChevron className="h-3.5 w-3.5 rotate-[-90deg]" />
               </p>
             )}
           </div>
         </div>
 
-        {selectedTour ? <TourDetailPanel tour={selectedTour} /> : null}
+        {selectedTour ? (
+          <TourDetailPanel tour={selectedTour} inventoryLive={inventoryLive} />
+        ) : null}
       </div>
     </section>
   );
