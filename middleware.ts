@@ -5,8 +5,9 @@ export async function middleware(request: NextRequest) {
   return updateSession(request);
 }
 
+// Only the admin area has a Supabase session to refresh. Keeping the public
+// marketing pages out of the matcher means a slow or paused Supabase project
+// cannot time out the middleware and take the whole site down.
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/admin/:path*"],
 };
