@@ -9,7 +9,6 @@ import { IconChevron } from "@/components/icons";
 import { btnBookRoute } from "@/lib/guest-ui";
 import {
   chartDotLabel,
-  chartHubLabel,
   destinationCode,
   getBookRouteLabel,
   isTourBookableOnline,
@@ -157,78 +156,63 @@ export function RiverRoutesSection({
           ) : null}
         </div>
 
-        <div className="flex gap-3 md:block">
+        <div>
           <nav
-            className="mobile-river-chart shrink-0 md:hidden"
+            className="mobile-river-chart mb-4 md:hidden"
             aria-label="River route chart"
           >
-            <ol className="flex flex-col">
+            <div className="mobile-river-chart__track">
               {tours.map((tour, index) => {
                 const isSelected = tour.id === selectedId;
                 return (
-                  <li key={tour.id} className="mobile-river-chart__leg">
+                  <div key={tour.id} className="mobile-river-chart__leg">
+                    {index > 0 ? (
+                      <div className="mobile-river-chart__line" aria-hidden />
+                    ) : null}
                     <button
                       type="button"
                       onClick={() => scrollToTour(tour.id)}
                       aria-pressed={isSelected}
                       aria-label={`Route ${tour.chartPosition}: ${tour.name}`}
-                      className={`mobile-river-chart__waypoint group w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] ${
-                        isSelected ? "mobile-river-chart__waypoint--active" : ""
-                      }`}
+                      className="pressable flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
                     >
                       <span
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
+                        className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${
                           isSelected
                             ? "bg-[var(--marker-yellow)] text-[var(--ink)] ring-4 ring-[var(--marker-yellow)]/35"
-                            : "border-2 border-[var(--river-blue)]/25 bg-white text-[var(--river-blue)] group-active:bg-[var(--chart-paper)]"
+                            : "border-2 border-[var(--river-blue)]/25 bg-white text-[var(--river-blue)]"
                         }`}
                         aria-hidden
                       >
                         {tour.chartPosition}
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span
-                          className={`block truncate text-xs font-semibold leading-tight ${
-                            isSelected ? "text-[var(--ink)]" : "text-[var(--ink-muted)]"
-                          }`}
-                        >
-                          {chartHubLabel(tour)}
-                        </span>
-                        <span className="block truncate text-xs leading-tight text-[var(--ink-muted)]">
-                          {tour.duration}
-                        </span>
-                      </span>
                     </button>
-                    {index < tours.length - 1 && (
-                      <div className="mobile-river-chart__line" aria-hidden />
-                    )}
-                  </li>
+                  </div>
                 );
               })}
-            </ol>
-            <div className="mobile-river-chart__destination" aria-hidden>
-              <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--river-blue)]/30 bg-[var(--river-navy)] text-xs font-bold text-[var(--marker-yellow)]">
-                {destinationCode(destination)}
-              </span>
-              <span className="text-xs font-semibold leading-tight text-[var(--ink-muted)]">
-                {destination}
-              </span>
+              <div className="mobile-river-chart__destination" aria-hidden>
+                <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[var(--river-blue)]/30 bg-[var(--river-navy)] text-xs font-bold text-[var(--marker-yellow)]">
+                  {destinationCode(destination)}
+                </span>
+                <span className="pr-1 text-xs font-semibold leading-tight text-[var(--ink-muted)]">
+                  {destination}
+                </span>
+              </div>
             </div>
-          </nav>
-
-          <div className="min-w-0 flex-1 md:w-auto">
-            {selectedTour && (
+            {selectedTour ? (
               <p
-                className="mb-3 text-xs font-medium text-[var(--river-blue)] md:hidden"
+                className="mt-2 text-sm font-medium text-[var(--river-blue)]"
                 aria-live="polite"
               >
                 Route {selectedTour.chartPosition} of {tours.length} · {selectedTour.name}
               </p>
-            )}
+            ) : null}
+          </nav>
 
+          <div className="min-w-0">
             <div
               ref={scrollRef}
-              className="river-routes-carousel flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scroll-ps-4 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:pb-0 xl:grid-cols-3 [&::-webkit-scrollbar]:hidden"
+              className="river-routes-carousel flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:pb-0 xl:grid-cols-3 [&::-webkit-scrollbar]:hidden"
             >
               {tours.map((tour) => {
                 const isSelected = tour.id === selectedId;
@@ -243,7 +227,7 @@ export function RiverRoutesSection({
                     data-tour-card
                     data-tour-id={tour.id}
                     onClick={() => setSelectedId(tour.id)}
-                    className="w-[min(78vw,17.5rem)] shrink-0 cursor-pointer snap-start md:w-auto"
+                    className="w-[min(85vw,20rem)] shrink-0 cursor-pointer snap-start md:w-auto"
                   >
                     <div
                       className={`flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-[0_14px_40px_-22px_rgba(27,61,92,0.45)] transition ${

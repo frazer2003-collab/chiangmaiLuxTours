@@ -81,7 +81,7 @@ export function ToursTab({
                 type="button"
                 disabled={pending}
                 onClick={() => save(tour.id)}
-                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--river-blue)] px-4 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] disabled:opacity-50"
+                className="admin-pressable inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--river-blue)] px-4 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] disabled:opacity-50"
               >
                 {savingTourId === tour.id ? (
                   <AdminSpinner className="h-4 w-4 text-white" />

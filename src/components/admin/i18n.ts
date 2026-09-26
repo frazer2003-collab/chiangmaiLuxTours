@@ -98,6 +98,10 @@ export const translations = {
     groupNextDepartures: "Next 7 days",
     groupLater: "Later",
     groupPast: "Past",
+    datesOpen: "{n} dates open",
+    oneDateOpen: "1 date open",
+    showAllDates: "Show all {n} dates",
+    updatedAt: "Updated {time}",
   },
   th: {
     appName: "Mekong Transfer",
@@ -195,6 +199,10 @@ export const translations = {
     groupNextDepartures: "7 วันถัดไป",
     groupLater: "ภายหลัง",
     groupPast: "ผ่านมาแล้ว",
+    datesOpen: "เปิด {n} วันที่",
+    oneDateOpen: "เปิด 1 วันที่",
+    showAllDates: "แสดงทั้งหมด {n} วันที่",
+    updatedAt: "อัปเดต {time}",
   },
 } as const;
 

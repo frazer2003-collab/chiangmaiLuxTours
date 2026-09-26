@@ -16,7 +16,7 @@ export function LanguageToggle() {
           key={code}
           type="button"
           onClick={() => setLocale(code)}
-          className={`min-h-9 min-w-10 rounded-full px-2.5 uppercase transition ${
+          className={`admin-pressable admin-hit-44 min-h-9 min-w-10 rounded-full px-2.5 uppercase transition ${
             locale === code
               ? "bg-[var(--river-blue)] text-white"
               : "text-[var(--ink-muted)] hover:text-[var(--ink)]"

@@ -204,7 +204,7 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
             key={f.id}
             type="button"
             onClick={() => setFilter(f.id)}
-            className={`inline-flex min-h-10 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition ${
+            className={`admin-pressable inline-flex min-h-11 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition ${
               filter === f.id
                 ? "bg-[var(--river-blue)] text-white"
                 : "bg-white text-[var(--ink-muted)] ring-1 ring-[var(--river-blue)]/15 hover:text-[var(--ink)]"
@@ -221,13 +221,16 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-[var(--ink-muted)]">
-            {lastRefreshed.toLocaleTimeString(localeTag, { hour: "2-digit", minute: "2-digit" })}
+            {tr("updatedAt").replace(
+              "{time}",
+              lastRefreshed.toLocaleTimeString(localeTag, { hour: "2-digit", minute: "2-digit" }),
+            )}
           </span>
           <button
             type="button"
             onClick={() => refresh()}
             disabled={refreshing || pending}
-            className="inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-medium text-[var(--river-blue)] ring-1 ring-[var(--river-blue)]/15 hover:bg-[var(--river-blue)]/8 disabled:opacity-50"
+            className="admin-pressable inline-flex min-h-11 items-center gap-2 rounded-full px-3.5 text-sm font-medium text-[var(--river-blue)] ring-1 ring-[var(--river-blue)]/15 hover:bg-[var(--river-blue)]/8 disabled:opacity-50"
           >
             {refreshing ? <AdminSpinner className="h-4 w-4" /> : null}
             {refreshing ? tr("refreshing") : tr("refreshList")}
@@ -259,7 +262,7 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
                     <button
                       type="button"
                       onClick={() => setSelected(booking)}
-                      className={`w-full rounded-2xl bg-white px-4 py-3.5 text-left ring-1 transition hover:ring-[var(--river-blue)]/25 ${
+                      className={`admin-pressable-wide w-full rounded-2xl bg-white px-4 py-3.5 text-left ring-1 transition hover:ring-[var(--river-blue)]/25 ${
                         booking.status === "pending" && booking.travel_date <= today
                           ? "ring-[var(--marker-yellow)]/60"
                           : "ring-[var(--river-blue)]/10"
@@ -316,7 +319,8 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
               <button
                 type="button"
                 onClick={() => setSelected(null)}
-                className="rounded-full p-2 text-[var(--ink-muted)] hover:bg-[var(--river-blue)]/8"
+                className="admin-pressable admin-hit-44 rounded-full p-2.5 text-[var(--ink-muted)] hover:bg-[var(--river-blue)]/8"
+                aria-label={tr("cancel")}
               >
                 <IconClose className="h-5 w-5" />
               </button>
@@ -353,7 +357,7 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
                         key={value}
                         type="button"
                         onClick={() => setStatus(value)}
-                        className={`min-h-10 rounded-xl px-3 text-sm font-medium transition ${
+                        className={`admin-pressable min-h-11 rounded-xl px-3 text-sm font-medium transition ${
                           status === value
                             ? "bg-[var(--river-blue)] text-white"
                             : "bg-white ring-1 ring-[var(--river-blue)]/15 text-[var(--ink-muted)]"

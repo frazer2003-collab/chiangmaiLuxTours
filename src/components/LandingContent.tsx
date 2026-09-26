@@ -60,7 +60,7 @@ export function LandingContent({
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--river-blue)]/12 bg-[var(--chart-paper)]/92 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-[var(--river-blue)]/12 bg-[var(--chart-paper)]/92 pt-[env(safe-area-inset-top)] backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link href="/" className="flex min-h-11 items-center gap-3">
             <Image
@@ -120,7 +120,7 @@ export function LandingContent({
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
                 href="#tours"
-                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--marker-yellow)] px-5 py-3 text-sm font-semibold text-[var(--ink)] shadow-[0_8px_20px_-8px_rgba(242,201,76,0.8)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="pressable inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--marker-yellow)] px-5 py-3 text-sm font-semibold text-[var(--ink)] shadow-[0_8px_20px_-8px_rgba(242,201,76,0.8)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 Choose a route
                 <IconChevron className="h-4 w-4" />
@@ -208,7 +208,7 @@ export function LandingContent({
                 key={item.q}
                 className="group rounded-2xl border border-[var(--river-blue)]/15 bg-white px-5 py-4"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg py-1 font-medium text-[var(--ink)] marker:content-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg py-2 font-medium text-[var(--ink)] marker:content-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] [&::-webkit-details-marker]:hidden">
                   <span>{item.q}</span>
                   <IconChevron className="h-4 w-4 shrink-0 text-[var(--river-blue)] transition group-open:rotate-180" />
                 </summary>
@@ -220,7 +220,7 @@ export function LandingContent({
       </section>
       </main>
 
-      <footer className="bg-[var(--river-navy)] py-10 text-white">
+      <footer className="bg-[var(--river-navy)] py-10 pb-[max(2.5rem,env(safe-area-inset-bottom))] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
           <div>
             <p className="text-lg font-semibold">Mekong Transfer</p>
@@ -234,7 +234,7 @@ export function LandingContent({
                 <li key={phone}>
                   <a
                     href={index === 0 ? whatsappHref() : `tel:${phone.replace(/[^\d+]/g, "")}`}
-                    className="hover:text-[var(--marker-yellow)]"
+                    className="inline-flex min-h-11 items-center hover:text-[var(--marker-yellow)]"
                   >
                     {phone}
                   </a>
@@ -244,15 +244,15 @@ export function LandingContent({
             <p className="mt-4 text-sm font-semibold text-white/90">Email</p>
             <a
               href={`mailto:${CONTACT.email}`}
-              className="mt-1 block text-sm text-white/75 hover:text-[var(--marker-yellow)]"
+              className="mt-1 inline-flex min-h-11 items-center text-sm text-white/75 hover:text-[var(--marker-yellow)]"
             >
               {CONTACT.email}
             </a>
             <nav className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/75" aria-label="Legal">
-              <Link href="/booking-terms" className="hover:text-[var(--marker-yellow)]">
+              <Link href="/booking-terms" className="inline-flex min-h-11 items-center hover:text-[var(--marker-yellow)]">
                 Booking terms
               </Link>
-              <Link href="/privacy" className="hover:text-[var(--marker-yellow)]">
+              <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-[var(--marker-yellow)]">
                 Privacy
               </Link>
             </nav>

@@ -311,7 +311,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="booking-title"
-        className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[1.25rem] bg-[var(--chart-paper)] shadow-[0_24px_60px_-12px_rgba(15,39,64,0.35)] sm:rounded-[1.25rem]"
+        className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[1.25rem] bg-[var(--chart-paper)] pb-[env(safe-area-inset-bottom)] shadow-[0_24px_60px_-12px_rgba(15,39,64,0.35)] sm:rounded-[1.25rem]"
       >
         <div className="flex items-start justify-between gap-4 border-b border-[var(--river-blue)]/15 px-5 py-4">
           <div className="min-w-0">
@@ -330,7 +330,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
             type="button"
             onClick={handleClose}
             aria-label="Close booking"
-            className="rounded-full p-2.5 text-[var(--ink-muted)] transition hover:bg-[var(--river-blue)]/8 hover:text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+            className="pressable admin-hit-44 rounded-full p-2.5 text-[var(--ink-muted)] transition hover:bg-[var(--river-blue)]/8 hover:text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
           >
             <IconClose className="h-5 w-5" />
           </button>
@@ -378,7 +378,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                         return (
                           <label
                             key={d}
-                            className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-sm transition ${
+                            className={`flex min-h-11 cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-sm transition ${
                               date === d
                                 ? "border-[var(--marker-yellow)] bg-[var(--marker-yellow)]/15 font-medium"
                                 : "border-[var(--river-blue)]/20 bg-white hover:border-[var(--river-blue)]/40"
@@ -695,7 +695,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                 type="button"
                 onClick={back}
                 disabled={submitting}
-                className="min-h-11 rounded-full px-4 py-2.5 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)] disabled:opacity-50"
+                className="pressable min-h-11 rounded-full px-4 py-2.5 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)] disabled:opacity-50"
               >
                 Back
               </button>
@@ -704,7 +704,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
               <button
                 type="button"
                 onClick={handleClose}
-                className="ml-auto min-h-11 flex-1 rounded-full bg-[var(--river-blue)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
+                className="pressable-wide ml-auto min-h-11 flex-1 rounded-full bg-[var(--river-blue)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--river-blue-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
               >
                 Done
               </button>
@@ -718,7 +718,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                   (step === "payment" && !canBookOnline)
                 }
                 aria-describedby={continueHint ? continueHintId : undefined}
-                className="ml-auto min-h-11 flex-1 rounded-full bg-[var(--marker-yellow)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] disabled:opacity-50"
+                className="pressable-wide ml-auto min-h-11 flex-1 rounded-full bg-[var(--marker-yellow)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] disabled:opacity-50"
               >
                 {step === "payment"
                   ? submitting

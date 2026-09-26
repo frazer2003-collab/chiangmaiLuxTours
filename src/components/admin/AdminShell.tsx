@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   describeSupabaseConfigProblem,
@@ -13,7 +13,6 @@ import { mapLoginError } from "@/lib/auth/login-errors";
 import { AdminSpinner } from "./AdminFeedback";
 import type { DbBooking, DbTourDate } from "@/lib/db/types";
 import { AdminLocaleProvider, useAdminLocale } from "./AdminLocaleProvider";
-import type { TranslationKey } from "./i18n";
 import { LanguageToggle } from "./LanguageToggle";
 import { BookingsTab } from "./BookingsTab";
 import { DatesTab } from "./DatesTab";
@@ -37,11 +36,18 @@ function AdminShellInner({
   const searchParams = useSearchParams();
   const [signingOut, startSignOut] = useTransition();
 
-  const tab = (searchParams.get("tab") as Tab) || "bookings";
+  // The tab lives in local state, not the URL. `/admin` is force-dynamic and
+  // re-queries Supabase on every render, so routing through router.replace()
+  // made each tab tap wait on a round trip. The URL is kept in sync with
+  // history.replaceState so reloads and shared links still land on the tab.
+  const [tab, setTabState] = useState<Tab>(
+    () => (searchParams.get("tab") as Tab) || "bookings",
+  );
 
-  function setTab(next: Tab) {
-    router.replace(`/admin?tab=${next}`, { scroll: false });
-  }
+  const setTab = useCallback((next: Tab) => {
+    setTabState(next);
+    window.history.replaceState(null, "", `/admin?tab=${next}`);
+  }, []);
 
   function signOut() {
     startSignOut(async () => {
@@ -52,31 +58,41 @@ function AdminShellInner({
     });
   }
 
-  const tabs: { id: Tab; label: string; hint: TranslationKey; badge?: number }[] = [
-    { id: "bookings", label: tr("bookings"), hint: "tabBookingsHint", badge: pendingCount || undefined },
-    { id: "dates", label: tr("dates"), hint: "tabDatesHint" },
-    { id: "tours", label: tr("tours"), hint: "tabToursHint" },
+  const tabs: { id: Tab; label: string; badge?: number }[] = [
+    { id: "bookings", label: tr("bookings"), badge: pendingCount || undefined },
+    { id: "dates", label: tr("dates") },
+    { id: "tours", label: tr("tours") },
   ];
 
   const activeTab = tabs.find((item) => item.id === tab) ?? tabs[0];
 
   return (
-    <div className="chart-grid flex min-h-dvh flex-col bg-[var(--chart-paper)]">
-      <header className="sticky top-0 z-10 border-b border-[var(--river-blue)]/10 bg-[var(--chart-paper)]/95 px-4 py-3 backdrop-blur-sm">
+    <div className="admin-shell chart-grid flex min-h-dvh flex-col bg-[var(--chart-paper)]">
+      {/*
+        The header carries the active section name so the panel below doesn't
+        need a card repeating what the bottom nav already highlights — that
+        card cost 85px of an 844px screen.
+      */}
+      <header className="sticky top-0 z-20 border-b border-[var(--river-blue)]/10 bg-[var(--chart-paper)]/95 px-4 py-3 backdrop-blur-sm">
         <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--river-blue)]">
-              {tr("appName")}
+              {tr("adminTitle")}
             </p>
-            <h1 className="text-lg font-semibold text-[var(--ink)]">{tr("adminTitle")}</h1>
+            <h1
+              className="truncate text-lg font-semibold text-[var(--ink)]"
+              aria-live="polite"
+            >
+              {activeTab.label}
+            </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1">
             <LanguageToggle />
             <button
               type="button"
               disabled={signingOut}
               onClick={signOut}
-              className="min-h-10 rounded-full px-3 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8"
+              className="admin-pressable min-h-11 rounded-full px-3 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8"
             >
               {tr("signOut")}
             </button>
@@ -85,14 +101,6 @@ function AdminShellInner({
       </header>
 
       <main className="mx-auto w-full max-w-lg flex-1 px-4 py-4 pb-24">
-        <div
-          className="mb-4 rounded-2xl bg-white px-4 py-3 ring-2 ring-[var(--marker-yellow)]/35 ring-offset-2 ring-offset-[var(--chart-paper)]"
-          aria-live="polite"
-        >
-          <h2 className="text-lg font-semibold text-[var(--ink)]">{activeTab.label}</h2>
-          <p className="mt-1 text-sm text-[var(--ink-muted)]">{tr(activeTab.hint)}</p>
-        </div>
-
         <div
           key={tab}
           role="tabpanel"
@@ -127,7 +135,7 @@ function AdminShellInner({
               aria-selected={active}
               aria-controls="admin-panel"
               onClick={() => setTab(item.id)}
-              className={`relative flex min-h-[3.25rem] flex-col items-center justify-center rounded-xl px-2 text-xs font-semibold transition duration-150 ${
+              className={`admin-pressable relative flex min-h-[3.25rem] flex-col items-center justify-center rounded-xl px-2 text-xs font-semibold transition duration-150 ${
                 active
                   ? "bg-[var(--river-blue)] text-white shadow-[0_6px_16px_-6px_rgba(37,99,168,0.65)]"
                   : "text-[var(--ink-muted)] hover:bg-[var(--river-blue)]/6 hover:text-[var(--ink)]"

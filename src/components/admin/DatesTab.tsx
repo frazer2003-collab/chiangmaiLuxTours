@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { tours } from "@/lib/tours";
+import { chartHubLabel } from "@/lib/tour-display";
 import type { DbTourDate } from "@/lib/db/types";
 import {
   addTourDate,
@@ -25,6 +26,19 @@ type DateConfirm =
   | { kind: "remove"; dateId: string }
   | null;
 
+const INITIAL_VISIBLE_DATES = 8;
+
+function fillCount(template: string, n: number) {
+  return template.replace("{n}", String(n));
+}
+
+function monthHeading(isoDate: string, localeTag: string) {
+  return new Date(`${isoDate.slice(0, 7)}-01T12:00:00`).toLocaleDateString(localeTag, {
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export function DatesTab({
   initialDatesByTour,
 }: {
@@ -32,6 +46,7 @@ export function DatesTab({
 }) {
   const { locale, tr } = useAdminLocale();
   const [tourId, setTourId] = useState(tours[0]?.id ?? "");
+  const [showAllDates, setShowAllDates] = useState(false);
   const [datesByTour, setDatesByTour] = useState(initialDatesByTour);
   const [newDate, setNewDate] = useState("");
   const [newCapacity, setNewCapacity] = useState(20);
@@ -46,6 +61,21 @@ export function DatesTab({
 
   const localeTag = locale === "th" ? "th-TH" : "en-GB";
   const dates = useMemo(() => datesByTour[tourId] ?? [], [datesByTour, tourId]);
+  const visibleDates = showAllDates ? dates : dates.slice(0, INITIAL_VISIBLE_DATES);
+  const dateGroups = useMemo(() => {
+    const groups: { month: string; rows: DbTourDate[] }[] = [];
+    for (const row of visibleDates) {
+      const month = monthHeading(row.date, localeTag);
+      const last = groups[groups.length - 1];
+      if (last && last.month === month) last.rows.push(row);
+      else groups.push({ month, rows: [row] });
+    }
+    return groups;
+  }, [visibleDates, localeTag]);
+
+  useEffect(() => {
+    setShowAllDates(false);
+  }, [tourId]);
 
   function reloadDates(id: string, mode: "reload" | "add" = "reload") {
     setError(null);
@@ -159,23 +189,28 @@ export function DatesTab({
     <div className="space-y-4">
       <div>
         <p className="mb-2 text-sm font-medium text-[var(--ink)]">{tr("selectTour")}</p>
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={tr("selectTour")}>
           {tours.map((tour) => {
-            const shortLabel = tour.name.replace(/→/g, "→\n").split("\n")[0]?.trim() ?? tour.from;
+            const selected = tourId === tour.id;
+            const openCount = (datesByTour[tour.id] ?? []).length;
             return (
               <button
                 key={tour.id}
                 type="button"
+                role="radio"
+                aria-checked={selected}
                 onClick={() => setTourId(tour.id)}
-                className={`flex shrink-0 flex-col items-start rounded-xl px-3.5 py-2 text-left transition ${
-                  tourId === tour.id
+                className={`admin-pressable-wide flex min-h-14 flex-col items-start justify-center rounded-xl px-3 py-2.5 text-left ${
+                  selected
                     ? "bg-[var(--river-blue)] text-white"
-                    : "bg-white text-[var(--ink-muted)] ring-1 ring-[var(--river-blue)]/15"
+                    : "bg-white text-[var(--ink)] ring-1 ring-[var(--river-blue)]/15"
                 }`}
               >
-                <span className="text-sm font-medium leading-tight">{shortLabel}</span>
-                <span className={`text-xs leading-tight ${tourId === tour.id ? "text-white/70" : "text-[var(--ink-muted)]"}`}>
-                  {tour.duration}
+                <span className="text-sm font-semibold leading-tight">{chartHubLabel(tour)}</span>
+                <span className={`mt-0.5 text-xs leading-tight ${selected ? "text-white/70" : "text-[var(--ink-muted)]"}`}>
+                  {openCount === 1
+                    ? tr("oneDateOpen")
+                    : fillCount(tr("datesOpen"), openCount)}
                 </span>
               </button>
             );
@@ -195,6 +230,7 @@ export function DatesTab({
             type="number"
             min={1}
             max={999}
+            inputMode="numeric"
             value={newCapacity}
             onChange={(e) => setNewCapacity(Number(e.target.value))}
             aria-label={tr("capacity")}
@@ -204,7 +240,7 @@ export function DatesTab({
             type="button"
             disabled={pending || !newDate}
             onClick={handleAddDate}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--marker-yellow)] px-4 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
+            className="admin-pressable-wide inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--marker-yellow)] px-4 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
           >
             {action === "add" ? <AdminSpinner /> : null}
             {action === "add" ? tr("adding") : tr("addDate")}
@@ -220,74 +256,101 @@ export function DatesTab({
       {loadingTour ? (
         <AdminSkeletonList count={3} />
       ) : (
-        <ul className="space-y-2">
+        <div className="space-y-4">
           {dates.length === 0 ? (
-            <li className="rounded-2xl bg-white px-4 py-8 text-center ring-1 ring-[var(--river-blue)]/10">
+            <div className="rounded-2xl bg-white px-4 py-8 text-center ring-1 ring-[var(--river-blue)]/10">
               <p className="text-sm font-medium text-[var(--ink)]">{tr("noDates")}</p>
               <p className="mt-1 text-xs text-[var(--ink-muted)]">{tr("noDatesHint")}</p>
-            </li>
+            </div>
           ) : (
-            dates.map((row) => {
-              const isFull = row.booked_count >= row.capacity;
-              return (
-                <li
-                  key={row.id}
-                  className="rounded-2xl bg-white px-4 py-3 ring-1 ring-[var(--river-blue)]/10"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-[var(--ink)]">
-                        {formatAdminDateRow(row.date, localeTag)}
-                      </p>
-                      <p className="text-sm text-[var(--ink-muted)]">
-                        {row.booked_count} / {row.capacity} {tr("booked")}
-                        {isFull ? ` · ${tr("full")}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <label className="sr-only" htmlFor={`cap-${row.id}`}>
-                        {tr("capacity")}
-                      </label>
-                      <input
-                        id={`cap-${row.id}`}
-                        type="number"
-                        min={row.booked_count}
-                        max={999}
-                        value={capacityDrafts[row.id] ?? row.capacity}
-                        onChange={(e) =>
-                          setCapacityDrafts((prev) => ({ ...prev, [row.id]: Number(e.target.value) }))
-                        }
-                        disabled={pending}
-                        className="min-h-11 w-20 rounded-lg border border-[var(--river-blue)]/20 px-2 py-1.5 text-center text-sm"
-                      />
-                      {capacityDrafts[row.id] != null && capacityDrafts[row.id] !== row.capacity ? (
-                        <button
-                          type="button"
-                          disabled={pending}
-                          onClick={() => handleCapacitySave(row.id)}
-                          className="inline-flex min-h-9 items-center gap-1 rounded-full bg-[var(--river-blue)] px-3 text-xs font-semibold text-white disabled:opacity-50"
+            <>
+              {dateGroups.map((group) => (
+                <section key={group.month}>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--river-blue)]">
+                    {group.month}
+                  </h3>
+                  <ul className="space-y-2">
+                    {group.rows.map((row) => {
+                      const isFull = row.booked_count >= row.capacity;
+                      const dirty =
+                        capacityDrafts[row.id] != null &&
+                        capacityDrafts[row.id] !== row.capacity;
+                      return (
+                        <li
+                          key={row.id}
+                          className="rounded-2xl bg-white px-4 py-3 ring-1 ring-[var(--river-blue)]/10"
                         >
-                          {savingCapId === row.id ? <AdminSpinner className="h-3 w-3 text-white" /> : null}
-                          {tr("save")}
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <button
-                      type="button"
-                      disabled={pending}
-                      onClick={() => handleRemoveClick(row.id, row.booked_count)}
-                      className="min-h-10 rounded-full px-3 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 disabled:opacity-50"
-                    >
-                      {row.booked_count > 0 ? tr("closeDate") : tr("removeDate")}
-                    </button>
-                  </div>
-                </li>
-              );
-            })
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-[var(--ink)]">
+                                {formatAdminDateRow(row.date, localeTag)}
+                              </p>
+                              <p className="text-sm text-[var(--ink-muted)]">
+                                {row.booked_count} / {row.capacity} {tr("booked")}
+                                {isFull ? ` · ${tr("full")}` : ""}
+                              </p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              <label className="sr-only" htmlFor={`cap-${row.id}`}>
+                                {tr("capacity")}
+                              </label>
+                              <input
+                                id={`cap-${row.id}`}
+                                type="number"
+                                inputMode="numeric"
+                                min={row.booked_count}
+                                max={999}
+                                value={capacityDrafts[row.id] ?? row.capacity}
+                                onChange={(e) =>
+                                  setCapacityDrafts((prev) => ({
+                                    ...prev,
+                                    [row.id]: Number(e.target.value),
+                                  }))
+                                }
+                                disabled={pending}
+                                className="min-h-11 w-16 rounded-lg border border-[var(--river-blue)]/20 px-2 text-center text-base"
+                              />
+                              <button
+                                type="button"
+                                disabled={pending || !dirty}
+                                onClick={() => handleCapacitySave(row.id)}
+                                className="admin-pressable inline-flex min-h-11 min-w-14 items-center justify-center gap-1 rounded-full bg-[var(--river-blue)] px-3 text-sm font-semibold text-white disabled:opacity-30"
+                              >
+                                {savingCapId === row.id ? (
+                                  <AdminSpinner className="h-3 w-3 text-white" />
+                                ) : null}
+                                {tr("save")}
+                              </button>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex gap-2">
+                            <button
+                              type="button"
+                              disabled={pending}
+                              onClick={() => handleRemoveClick(row.id, row.booked_count)}
+                              className="admin-pressable min-h-11 rounded-full px-3 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 disabled:opacity-50"
+                            >
+                              {row.booked_count > 0 ? tr("closeDate") : tr("removeDate")}
+                            </button>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              ))}
+              {!showAllDates && dates.length > INITIAL_VISIBLE_DATES ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAllDates(true)}
+                  className="admin-pressable-wide min-h-11 w-full rounded-full bg-white text-sm font-semibold text-[var(--river-blue)] ring-1 ring-[var(--river-blue)]/15"
+                >
+                  {fillCount(tr("showAllDates"), dates.length)}
+                </button>
+              ) : null}
+            </>
           )}
-        </ul>
+        </div>
       )}
       <AdminConfirmDialog
         open={dateConfirm?.kind === "close"}

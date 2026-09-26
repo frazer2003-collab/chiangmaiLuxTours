@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Libre_Baskerville, Libre_Franklin } from "next/font/google";
 import { getSiteUrl, PRODUCTION_SITE_URL } from "@/lib/site-url";
 import "./globals.css";
@@ -28,6 +28,14 @@ export const metadata: Metadata = {
     siteName: "Mekong Transfer",
     type: "website",
   },
+};
+
+// `cover` is what makes env(safe-area-inset-*) resolve to real values. Without
+// it the admin shell's fixed bottom nav sits under the iPhone home indicator.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

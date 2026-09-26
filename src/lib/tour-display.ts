@@ -49,7 +49,7 @@ export function isBudgetTour(tourId: string): boolean {
   return BUDGET_TOUR_IDS.has(tourId);
 }
 
-export function chartHubLabel(tour: CatalogTour): string {
+export function chartHubLabel(tour: { id: string; from: string }): string {
   return CHART_LABELS[tour.id] ?? tour.from;
 }
 
@@ -60,6 +60,17 @@ export function chartDotLabel(tour: CatalogTour): string {
 /** Short badge for the mobile chart's destination marker. */
 export function destinationCode(destination: string): string {
   return DESTINATION_CODES[destination] ?? destination.slice(0, 3).toUpperCase();
+}
+
+/**
+ * Route label for staff pickers. Five routes leave from Chiang Rai and three
+ * end in Luang Prabang, so neither endpoint alone identifies a route — the
+ * transport tier is what staff actually need to tell them apart.
+ */
+export function adminRouteLabel(tour: { id: string; from: string; to: string }): string {
+  const tier = TIER_BADGES[tour.id];
+  const route = `${tour.from} → ${tour.to}`;
+  return tier ? `${route} · ${tier}` : route;
 }
 
 export function tourHasOpenDates(tour: CatalogTour): boolean {
