@@ -54,7 +54,7 @@ export function LandingContent({
   },
   {
     q: "Where do I meet the boat?",
-    a: "Each tour lists its departure hub — Chiang Mai, Chiang Rai, Chiang Khong, or Huay Xai Village. All routes finish in Luang Prabang.",
+    a: "Each tour lists its departure hub — Chiang Mai, Chiang Rai, Chiang Khong, or Huay Xai Village. Boat routes finish in Luang Prabang; the Train K11 routes continue to Vang Vieng or Vientiane.",
   },
 ];
 
@@ -168,8 +168,8 @@ export function LandingContent({
             Meeting points
           </h2>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--ink-muted)]">
-            Departure hubs for each route — all journeys finish in Luang Prabang. Hotel transfer
-            is included.
+            Departure hubs for each route — journeys finish in Luang Prabang, Vang Vieng, or
+            Vientiane. Hotel transfer is included.
           </p>
           <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)] lg:items-stretch">
             <RoutePhoto
@@ -258,8 +258,8 @@ export function LandingContent({
             </nav>
           </div>
           <p className="text-sm leading-relaxed text-white/65 sm:col-span-2 lg:col-span-1">
-            Experience the Real Laos — premium slow boat routes from Chiang Mai, Chiang Rai,
-            Chiang Khong, and Huay Xai to Luang Prabang.
+            Experience the Real Laos — slow boat, van, and train routes from Chiang Mai, Chiang
+            Rai, Chiang Khong, and Huay Xai to Luang Prabang, Vang Vieng, and Vientiane.
           </p>
         </div>
       </footer>

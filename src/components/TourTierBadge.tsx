@@ -1,11 +1,10 @@
-import { getTourTierBadge } from "@/lib/tour-display";
+import { getTourTierBadge, isBudgetTour } from "@/lib/tour-display";
 
 export function TourTierBadge({ tourId }: { tourId: string }) {
   const label = getTourTierBadge(tourId);
   if (!label) return null;
 
-  const isBudget =
-    tourId === "chiang-rai-slowboat-luang-prabang" || tourId === "chiang-rai-train-luang-prabang";
+  const isBudget = isBudgetTour(tourId);
 
   return (
     <span

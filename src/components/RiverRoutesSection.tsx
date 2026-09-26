@@ -10,6 +10,7 @@ import { btnBookRoute } from "@/lib/guest-ui";
 import {
   chartDotLabel,
   chartHubLabel,
+  destinationCode,
   getBookRouteLabel,
   isTourBookableOnline,
 } from "@/lib/tour-display";
@@ -75,6 +76,7 @@ export function RiverRoutesSection({
   }, []);
 
   const selectedTour = tours.find((t) => t.id === selectedId) ?? tours[0];
+  const destination = selectedTour?.to ?? "Luang Prabang";
 
   return (
     <section
@@ -88,7 +90,8 @@ export function RiverRoutesSection({
             River routes
           </h2>
           <p className="mt-3 text-base leading-relaxed text-[var(--ink-muted)]">
-            Six routes to Luang Prabang — by slow boat, van, or train from different hubs.
+            Eight routes into Laos — by slow boat, van, or train, ending in Luang Prabang,
+            Vang Vieng, or Vientiane.
           </p>
         </div>
 
@@ -205,10 +208,10 @@ export function RiverRoutesSection({
             </ol>
             <div className="mobile-river-chart__destination" aria-hidden>
               <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--river-blue)]/30 bg-[var(--river-navy)] text-xs font-bold text-[var(--marker-yellow)]">
-                LP
+                {destinationCode(destination)}
               </span>
               <span className="text-xs font-semibold leading-tight text-[var(--ink-muted)]">
-                Luang Prabang
+                {destination}
               </span>
             </div>
           </nav>

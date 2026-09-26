@@ -235,27 +235,27 @@ export const tours: Tour[] = [
     posterTitle: "CHIANG RAI – LUANG PRABANG (TRAIN)",
     tagline: "Van to the border, then train K11 to Luang Prabang in one day",
     headline: "Cross the Border by Train",
-    intro: "Travel by van from Chiang Rai to the Lao border, continue by van to Natuey train station, and ride Train K11 to Luang Prabang — all in one day. The same route can also take you to Vang Vieng or Vientiane.",
+    intro: "Travel by van from Chiang Rai to the Lao border, continue by van to Natuey train station, and ride Train K11 to Luang Prabang — all in one day.",
     duration: "1 day trip",
     durationDetail: "Van to the border, van to Natuey station, then Train K11",
     route: "Chiang Rai → Huay Xai → Natuey → Luang Prabang",
     routeDetail: "Chiang Rai – Huay Xai – Natuey Station – Luang Prabang (Train K11)",
     from: "Chiang Rai",
     to: "Luang Prabang",
-    perfectFor: "Travellers who prefer speed and want to reach Luang Prabang, Vang Vieng, or Vientiane by train",
+    perfectFor: "Travellers who prefer speed and want to reach Luang Prabang in a single day",
     price: "฿1,800 / person",
     meetingPoint: "Chiang Rai — hotel pickup at 5:00 am",
     highlights: [
       "Van + van + Train K11 · 1 day",
       "Arrives Luang Prabang by 4:30 pm",
-      "Also connects to Vang Vieng and Vientiane",
+      "Border crossing assistance included",
       `TAT Licence ID ${CONTACT.licence}`,
     ],
     experiences: [
       { title: "Van Transfer", description: "11-seater van from hotel to the border." },
       { title: "Border Crossing", description: "Shuttle bus across to Lao immigration at Huay Xai." },
       { title: "Van to Station", description: "11-seater van from Huay Xai border to Natuey train station." },
-      { title: "Train K11", description: "Modern rail from Natuey to Luang Prabang, Vang Vieng, or Vientiane." },
+      { title: "Train K11", description: "Modern rail from Natuey to Luang Prabang." },
     ],
     itinerary: [
       {
@@ -271,7 +271,7 @@ export const tours: Tour[] = [
       {
         label: "Afternoon",
         detail:
-          "Board Train K11. Arrives Luang Prabang at 4:30 pm, Vang Vieng at 5:35 pm, or Vientiane at 7:30 pm.",
+          "Train K11 departs Natuey at 2:20 pm and arrives Luang Prabang at 4:30 pm.",
       },
     ],
     includes: [
@@ -280,8 +280,126 @@ export const tours: Tour[] = [
       "Van transfer to Natuey station",
       "Train K11 ticket",
     ],
-    demoDates: ["2026-08-25", "2026-09-08", "2026-09-22"],
+    demoDates: ["2026-10-03", "2026-10-10", "2026-10-17"],
     chartPosition: 6,
+    image: "/photos/train-k11.jpg",
+    imageAlt: "Train K11 at Natuey station platform in Laos",
+    gallery: [
+      { src: "/photos/van-border.jpg", alt: "11-seater transfer van at the border crossing" },
+    ],
+  },
+  {
+    id: "chiang-rai-train-vang-vieng",
+    name: "Chiang Rai → Vang Vieng (Train)",
+    posterTitle: "CHIANG RAI – VANG VIENG (TRAIN)",
+    tagline: "Van to the border, then train K11 to Vang Vieng in one day",
+    headline: "Cross the Border by Train",
+    intro: "Travel by van from Chiang Rai to the Lao border, continue by van to Natuey train station, and ride Train K11 straight through to Vang Vieng — all in one day.",
+    duration: "1 day trip",
+    durationDetail: "Van to the border, van to Natuey station, then Train K11",
+    route: "Chiang Rai → Huay Xai → Natuey → Vang Vieng",
+    routeDetail: "Chiang Rai – Huay Xai – Natuey Station – Vang Vieng (Train K11)",
+    from: "Chiang Rai",
+    to: "Vang Vieng",
+    perfectFor: "Travellers heading for the limestone karsts and rivers of Vang Vieng",
+    price: "฿1,800 / person",
+    meetingPoint: "Chiang Rai — hotel pickup at 5:00 am",
+    highlights: [
+      "Van + van + Train K11 · 1 day",
+      "Arrives Vang Vieng by 5:35 pm",
+      "Border crossing assistance included",
+      `TAT Licence ID ${CONTACT.licence}`,
+    ],
+    experiences: [
+      { title: "Van Transfer", description: "11-seater van from hotel to the border." },
+      { title: "Border Crossing", description: "Shuttle bus across to Lao immigration at Huay Xai." },
+      { title: "Van to Station", description: "11-seater van from Huay Xai border to Natuey train station." },
+      { title: "Train K11", description: "Modern rail from Natuey through Luang Prabang to Vang Vieng." },
+    ],
+    itinerary: [
+      {
+        label: "Morning",
+        detail:
+          "Hotel pickup in Chiang Rai at 5:00 am by 11-seater van. Arrive at the border around 7:00 am. Shuttle bus across to Lao immigration (about 30–45 minutes).",
+      },
+      {
+        label: "Midday",
+        detail:
+          "Pick up from Huay Xai border by 11-seater van to Natuey train station, arriving around 1:30 pm.",
+      },
+      {
+        label: "Afternoon",
+        detail:
+          "Train K11 departs Natuey at 2:20 pm, calls at Luang Prabang at 4:30 pm, and arrives Vang Vieng at 5:35 pm.",
+      },
+    ],
+    includes: [
+      "Hotel transfer from Chiang Rai",
+      "Border shuttle bus",
+      "Van transfer to Natuey station",
+      "Train K11 ticket",
+    ],
+    demoDates: ["2026-10-03", "2026-10-10", "2026-10-17"],
+    chartPosition: 7,
+    image: "/photos/train-k11.jpg",
+    imageAlt: "Train K11 at Natuey station platform in Laos",
+    gallery: [
+      { src: "/photos/van-border.jpg", alt: "11-seater transfer van at the border crossing" },
+    ],
+  },
+  {
+    id: "chiang-rai-train-vientiane",
+    name: "Chiang Rai → Vientiane (Train)",
+    posterTitle: "CHIANG RAI – VIENTIANE (TRAIN)",
+    tagline: "Van to the border, then train K11 to Vientiane in one day",
+    headline: "Cross the Border by Train",
+    intro: "Travel by van from Chiang Rai to the Lao border, continue by van to Natuey train station, and ride Train K11 all the way to the Lao capital — all in one day.",
+    duration: "1 day trip",
+    durationDetail: "Van to the border, van to Natuey station, then Train K11",
+    route: "Chiang Rai → Huay Xai → Natuey → Vientiane",
+    routeDetail: "Chiang Rai – Huay Xai – Natuey Station – Vientiane (Train K11)",
+    from: "Chiang Rai",
+    to: "Vientiane",
+    perfectFor: "Travellers continuing to the Lao capital or onward connections",
+    price: "฿1,800 / person",
+    meetingPoint: "Chiang Rai — hotel pickup at 5:00 am",
+    highlights: [
+      "Van + van + Train K11 · 1 day",
+      "Arrives Vientiane by 7:30 pm",
+      "Border crossing assistance included",
+      `TAT Licence ID ${CONTACT.licence}`,
+    ],
+    experiences: [
+      { title: "Van Transfer", description: "11-seater van from hotel to the border." },
+      { title: "Border Crossing", description: "Shuttle bus across to Lao immigration at Huay Xai." },
+      { title: "Van to Station", description: "11-seater van from Huay Xai border to Natuey train station." },
+      { title: "Train K11", description: "Modern rail from Natuey through Luang Prabang and Vang Vieng to Vientiane." },
+    ],
+    itinerary: [
+      {
+        label: "Morning",
+        detail:
+          "Hotel pickup in Chiang Rai at 5:00 am by 11-seater van. Arrive at the border around 7:00 am. Shuttle bus across to Lao immigration (about 30–45 minutes).",
+      },
+      {
+        label: "Midday",
+        detail:
+          "Pick up from Huay Xai border by 11-seater van to Natuey train station, arriving around 1:30 pm.",
+      },
+      {
+        label: "Afternoon",
+        detail:
+          "Train K11 departs Natuey at 2:20 pm, calls at Luang Prabang at 4:30 pm and Vang Vieng at 5:35 pm, and arrives Vientiane at 7:30 pm.",
+      },
+    ],
+    includes: [
+      "Hotel transfer from Chiang Rai",
+      "Border shuttle bus",
+      "Van transfer to Natuey station",
+      "Train K11 ticket",
+    ],
+    demoDates: ["2026-10-03", "2026-10-10", "2026-10-17"],
+    chartPosition: 8,
     image: "/photos/train-k11.jpg",
     imageAlt: "Train K11 at Natuey station platform in Laos",
     gallery: [

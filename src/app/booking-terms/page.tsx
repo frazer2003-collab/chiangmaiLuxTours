@@ -11,8 +11,9 @@ export default function BookingTermsPage() {
   return (
     <GuestLegalPage title="Booking terms">
       <p>
-        Mekong Transfer (TAT Licence ID {CONTACT.licence}) sells slow-boat journeys from Chiang
-        Mai, Chiang Rai, Chiang Khong, and Huay Xai to Luang Prabang.
+        Mekong Transfer (TAT Licence ID {CONTACT.licence}) sells slow-boat, van, and train
+        journeys from Chiang Mai, Chiang Rai, Chiang Khong, and Huay Xai to Luang Prabang, Vang
+        Vieng, and Vientiane.
       </p>
       <p>
         <strong className="font-semibold text-[var(--ink)]">Pay now</strong> holds your seats and
