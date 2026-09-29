@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServiceClient } from "@/lib/supabase/service";
+import { notifyStaffOfPaidBooking } from "@/lib/email/notify-booking";
 import { getStripeWebhookSecret } from "@/lib/stripe/env";
 import { getStripe } from "@/lib/stripe/server";
 
@@ -29,10 +30,14 @@ async function confirmBookingPayment(session: Stripe.Checkout.Session): Promise<
     p_stripe_payment_id: getPaymentReference(session),
   });
 
-  if (error) {
+  // A Stripe retry after a failed email lands here with the booking already
+  // confirmed; carry on so the notification still goes out.
+  if (error && !error.message.includes("booking_not_pending")) {
     console.error("confirm_booking_payment failed:", error.message);
     throw new Error("Database update failed");
   }
+
+  await notifyStaffOfPaidBooking(bookingId);
 
   return bookingId;
 }

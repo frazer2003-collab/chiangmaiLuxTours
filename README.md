@@ -72,3 +72,5 @@ Live checkout: cards, Apple Pay, and Thai PromptPay via Stripe.
 **Domain + Supabase URLs:** [DOMAIN_SETUP.md](./DOMAIN_SETUP.md)
 
 Required Vercel vars: `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_SITE_URL`.
+
+**Staff booking emails (Resend):** when Stripe confirms a paid booking, the webhook emails staff the guest name and email, route, departure date, passenger count, and booking reference (never passport or ID numbers). Set `RESEND_API_KEY`, `BOOKING_NOTIFY_EMAIL=thunniti2513@gmail.com`, and `BOOKING_FROM_EMAIL=Mekong Transfer <bookings@mekong-transfer.com>` in Vercel, after verifying `mekong-transfer.com` as a sending domain in Resend. The two address vars default to those values; if `RESEND_API_KEY` is missing, bookings still confirm and the email is skipped with a log line. If a send fails, the webhook returns 500 so Stripe retries; each booking is sent at most once.
