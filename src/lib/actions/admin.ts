@@ -9,6 +9,10 @@ import {
   type DbBooking,
   type DbTourDate,
 } from "@/lib/db/types";
+import {
+  closedCapacity,
+  validateBatchDates,
+} from "@/lib/admin-date-schedule";
 
 export type ActionResult<T = void> =
   | { ok: true; data?: T }
@@ -227,6 +231,53 @@ export async function addTourDate(input: {
   }
 }
 
+export async function addTourDates(input: {
+  tourId: string;
+  dates: string[];
+  capacity: number;
+}): Promise<ActionResult<{ added: number; skipped: number }>> {
+  try {
+    const { supabase } = await requireStaff();
+    const validated = validateBatchDates(
+      input.dates,
+      new Date().toISOString().slice(0, 10),
+    );
+    if (!validated.ok) {
+      return { ok: false, error: "Choose a valid future date range." };
+    }
+
+    const capacity = Math.floor(input.capacity);
+    if (capacity <= 0 || capacity > 999) {
+      return { ok: false, error: "Capacity must be between 1 and 999." };
+    }
+
+    const rows = validated.dates.map((date) => ({
+      tour_id: input.tourId,
+      date,
+      capacity,
+      booked_count: 0,
+    }));
+    const { data, error } = await supabase
+      .from("tour_dates")
+      .upsert(rows, {
+        onConflict: "tour_id,date",
+        ignoreDuplicates: true,
+      })
+      .select("id");
+
+    if (error) return { ok: false, error: error.message };
+
+    const added = data?.length ?? 0;
+    await revalidateAdmin();
+    return {
+      ok: true,
+      data: { added, skipped: validated.dates.length - added },
+    };
+  } catch {
+    return { ok: false, error: "Unauthorized" };
+  }
+}
+
 export async function updateTourDateCapacity(input: {
   id: string;
   capacity: number;
@@ -297,7 +348,79 @@ export async function removeTourDate(input: {
 }
 
 export async function closeTourDate(input: { id: string }): Promise<ActionResult> {
-  return updateTourDateCapacity({ id: input.id, capacity: 0 });
+  try {
+    const { supabase } = await requireStaff();
+    const { data: row, error: fetchError } = await supabase
+      .from("tour_dates")
+      .select("booked_count")
+      .eq("id", input.id)
+      .single();
+
+    if (fetchError || !row) return { ok: false, error: "Date not found." };
+
+    const { error } = await supabase
+      .from("tour_dates")
+      .update({ capacity: closedCapacity(row.booked_count) })
+      .eq("id", input.id);
+
+    if (error) return { ok: false, error: error.message };
+    await revalidateAdmin();
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Unauthorized" };
+  }
+}
+
+export async function removeTourDates(input: {
+  ids: string[];
+}): Promise<ActionResult<{ removed: number; closed: number }>> {
+  try {
+    const { supabase } = await requireStaff();
+    const ids = [...new Set(input.ids.filter(Boolean))];
+    if (ids.length === 0 || ids.length > 366) {
+      return { ok: false, error: "Select between 1 and 366 dates." };
+    }
+
+    const { data, error: fetchError } = await supabase
+      .from("tour_dates")
+      .select("id, booked_count")
+      .in("id", ids);
+
+    if (fetchError) return { ok: false, error: fetchError.message };
+    if (!data || data.length !== ids.length) {
+      return { ok: false, error: "One or more dates could not be found." };
+    }
+
+    const emptyIds = data.filter((row) => row.booked_count === 0).map((row) => row.id);
+    const bookedRows = data.filter((row) => row.booked_count > 0);
+
+    const closeResults = await Promise.all(
+      bookedRows.map((row) =>
+        supabase
+          .from("tour_dates")
+          .update({ capacity: closedCapacity(row.booked_count) })
+          .eq("id", row.id),
+      ),
+    );
+    const closeError = closeResults.find((result) => result.error)?.error;
+    if (closeError) return { ok: false, error: closeError.message };
+
+    if (emptyIds.length > 0) {
+      const { error: deleteError } = await supabase
+        .from("tour_dates")
+        .delete()
+        .in("id", emptyIds);
+      if (deleteError) return { ok: false, error: deleteError.message };
+    }
+
+    await revalidateAdmin();
+    return {
+      ok: true,
+      data: { removed: emptyIds.length, closed: bookedRows.length },
+    };
+  } catch {
+    return { ok: false, error: "Unauthorized" };
+  }
 }
 
 export async function signOutAdmin(): Promise<void> {

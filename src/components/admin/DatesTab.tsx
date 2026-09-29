@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { tours } from "@/lib/tours";
 import { chartHubLabel } from "@/lib/tour-display";
 import type { DbTourDate } from "@/lib/db/types";
 import {
-  addTourDate,
-  closeTourDate,
+  addTourDates,
   fetchAdminTourDates,
-  removeTourDate,
+  removeTourDates,
   updateTourDateCapacity,
 } from "@/lib/actions/admin";
+import { buildRecurringSchedule } from "@/lib/admin-date-schedule";
 import { useAdminLocale } from "./AdminLocaleProvider";
 import {
   AdminSkeletonList,
@@ -21,15 +21,18 @@ import { AdminConfirmDialog } from "./AdminConfirmDialog";
 import { AdminDateInput } from "./AdminDateInput";
 import { formatAdminDateRow } from "@/lib/admin-date-input";
 
-type DateConfirm =
-  | { kind: "close"; dateId: string }
-  | { kind: "remove"; dateId: string }
-  | null;
-
 const INITIAL_VISIBLE_DATES = 8;
+const WEEKDAYS = [1, 2, 3, 4, 5, 6, 0];
 
 function fillCount(template: string, n: number) {
   return template.replace("{n}", String(n));
+}
+
+function fillVars(template: string, values: Record<string, string | number>) {
+  return Object.entries(values).reduce(
+    (text, [key, value]) => text.replace(`{${key}}`, String(value)),
+    template,
+  );
 }
 
 function monthHeading(isoDate: string, localeTag: string) {
@@ -48,20 +51,37 @@ export function DatesTab({
   const [tourId, setTourId] = useState(tours[0]?.id ?? "");
   const [showAllDates, setShowAllDates] = useState(false);
   const [datesByTour, setDatesByTour] = useState(initialDatesByTour);
-  const [newDate, setNewDate] = useState("");
+  const [rangeStart, setRangeStart] = useState("");
+  const [rangeEnd, setRangeEnd] = useState("");
+  const [weekdays, setWeekdays] = useState<number[]>(WEEKDAYS);
   const [newCapacity, setNewCapacity] = useState(20);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loadingTour, setLoadingTour] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [action, setAction] = useState<"add" | "reload" | "close" | "remove" | null>(
-    null,
-  );
-  const [dateConfirm, setDateConfirm] = useState<DateConfirm>(null);
+  const [action, setAction] = useState<"add" | "reload" | "remove" | null>(null);
 
   const localeTag = locale === "th" ? "th-TH" : "en-GB";
   const dates = useMemo(() => datesByTour[tourId] ?? [], [datesByTour, tourId]);
   const visibleDates = showAllDates ? dates : dates.slice(0, INITIAL_VISIBLE_DATES);
+  const schedule = useMemo(
+    () =>
+      buildRecurringSchedule({
+        startDate: rangeStart,
+        endDate: rangeEnd,
+        weekdays,
+        existingDates: dates.map((row) => row.date),
+      }),
+    [dates, rangeEnd, rangeStart, weekdays],
+  );
+  const selectedRows = useMemo(
+    () => dates.filter((row) => selectedIds.has(row.id)),
+    [dates, selectedIds],
+  );
+  const selectedBooked = selectedRows.filter((row) => row.booked_count > 0).length;
+  const selectedEmpty = selectedRows.length - selectedBooked;
   const dateGroups = useMemo(() => {
     const groups: { month: string; rows: DbTourDate[] }[] = [];
     for (const row of visibleDates) {
@@ -73,9 +93,14 @@ export function DatesTab({
     return groups;
   }, [visibleDates, localeTag]);
 
-  useEffect(() => {
+  function handleTourChange(id: string) {
+    setTourId(id);
     setShowAllDates(false);
-  }, [tourId]);
+    setSelectedIds(new Set());
+    setBulkConfirmOpen(false);
+    setRangeStart("");
+    setRangeEnd("");
+  }
 
   function reloadDates(id: string, mode: "reload" | "add" = "reload") {
     setError(null);
@@ -93,18 +118,28 @@ export function DatesTab({
     });
   }
 
-  function handleAddDate() {
+  function handleAddDates() {
     setError(null);
     setSuccess(null);
-    if (!newDate) {
-      setError(tr("dateInvalid"));
+    if (!schedule.ok) {
+      const key =
+        schedule.reason === "weekdays"
+          ? "selectWeekday"
+          : schedule.reason === "too_long"
+            ? "dateRangeTooLong"
+            : "dateRangeInvalid";
+      setError(tr(key));
+      return;
+    }
+    if (schedule.newDates.length === 0) {
+      setError(tr("noNewDates"));
       return;
     }
     setAction("add");
     startTransition(async () => {
-      const result = await addTourDate({
+      const result = await addTourDates({
         tourId,
-        date: newDate,
+        dates: schedule.newDates,
         capacity: newCapacity,
       });
       setAction(null);
@@ -112,8 +147,14 @@ export function DatesTab({
         setError(result.error);
         return;
       }
-      setNewDate("");
-      setSuccess(tr("saved"));
+      setRangeStart("");
+      setRangeEnd("");
+      setSuccess(
+        fillVars(tr("datesAdded"), {
+          added: result.data?.added ?? schedule.newDates.length,
+          skipped: result.data?.skipped ?? 0,
+        }),
+      );
       reloadDates(tourId, "add");
     });
   }
@@ -144,44 +185,61 @@ export function DatesTab({
     });
   }
 
-  function handleRemoveClick(id: string, bookedCount: number) {
-    if (bookedCount > 0) {
-      setDateConfirm({ kind: "close", dateId: id });
-      return;
-    }
-    setDateConfirm({ kind: "remove", dateId: id });
+  function toggleWeekday(day: number) {
+    setWeekdays((current) =>
+      current.includes(day)
+        ? current.filter((value) => value !== day)
+        : WEEKDAYS.filter((value) => current.includes(value) || value === day),
+    );
   }
 
-  function confirmDateAction() {
-    if (!dateConfirm) return;
+  function toggleSelected(id: string) {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function selectVisibleDates() {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      const allVisibleSelected = visibleDates.every((row) => next.has(row.id));
+      for (const row of visibleDates) {
+        if (allVisibleSelected) next.delete(row.id);
+        else next.add(row.id);
+      }
+      return next;
+    });
+  }
+
+  function handleRemoveClick(id: string) {
+    setSelectedIds(new Set([id]));
+    setBulkConfirmOpen(true);
+  }
+
+  function confirmBulkRemove() {
+    if (selectedIds.size === 0) return;
     setError(null);
     setSuccess(null);
-
-    if (dateConfirm.kind === "close") {
-      setAction("close");
-      startTransition(async () => {
-        const closed = await closeTourDate({ id: dateConfirm.dateId });
-        setAction(null);
-        setDateConfirm(null);
-        if (!closed.ok) setError(closed.error);
-        else {
-          setSuccess(tr("saved"));
-          reloadDates(tourId);
-        }
-      });
-      return;
-    }
-
     setAction("remove");
     startTransition(async () => {
-      const result = await removeTourDate({ id: dateConfirm.dateId, force: true });
+      const result = await removeTourDates({ ids: [...selectedIds] });
       setAction(null);
-      setDateConfirm(null);
-      if (!result.ok) setError(result.error);
-      else {
-        setSuccess(tr("saved"));
-        reloadDates(tourId);
+      if (!result.ok) {
+        setError(result.error);
+        return;
       }
+      setBulkConfirmOpen(false);
+      setSelectedIds(new Set());
+      setSuccess(
+        fillVars(tr("datesRemoved"), {
+          removed: result.data?.removed ?? selectedEmpty,
+          closed: result.data?.closed ?? selectedBooked,
+        }),
+      );
+      reloadDates(tourId);
     });
   }
 
@@ -192,14 +250,16 @@ export function DatesTab({
         <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={tr("selectTour")}>
           {tours.map((tour) => {
             const selected = tourId === tour.id;
-            const openCount = (datesByTour[tour.id] ?? []).length;
+            const openCount = (datesByTour[tour.id] ?? []).filter(
+              (row) => row.booked_count < row.capacity,
+            ).length;
             return (
               <button
                 key={tour.id}
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                onClick={() => setTourId(tour.id)}
+                onClick={() => handleTourChange(tour.id)}
                 className={`admin-pressable-wide flex min-h-14 flex-col items-start justify-center rounded-xl px-3 py-2.5 text-left ${
                   selected
                     ? "bg-[var(--river-blue)] text-white"
@@ -219,13 +279,96 @@ export function DatesTab({
       </div>
 
       <div className="rounded-2xl bg-white p-4 ring-1 ring-[var(--river-blue)]/10">
-        <p className="text-sm font-medium text-[var(--ink)]">{tr("addDate")}</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-          <AdminDateInput
-            value={newDate}
-            onChange={setNewDate}
-            disabled={pending}
-          />
+        <div>
+          <h2 className="text-base font-semibold text-[var(--ink)]">
+            {tr("addSchedule")}
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-[var(--ink-muted)]">
+            {tr("addScheduleHint")}
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-[var(--ink)]">
+              {tr("startDate")}
+            </span>
+            <AdminDateInput
+              id="schedule-start"
+              value={rangeStart}
+              onChange={setRangeStart}
+              disabled={pending}
+              showHint={false}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-[var(--ink)]">
+              {tr("endDate")}
+            </span>
+            <AdminDateInput
+              id="schedule-end"
+              value={rangeEnd}
+              onChange={setRangeEnd}
+              disabled={pending}
+              showHint={false}
+            />
+          </label>
+        </div>
+
+        <fieldset className="mt-4">
+          <div className="flex items-center justify-between gap-3">
+            <legend className="text-sm font-medium text-[var(--ink)]">
+              {tr("repeatOn")}
+            </legend>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() =>
+                setWeekdays(weekdays.length === WEEKDAYS.length ? [] : WEEKDAYS)
+              }
+              className="admin-hit-44 text-sm font-semibold text-[var(--river-blue)] disabled:opacity-50"
+            >
+              {weekdays.length === WEEKDAYS.length
+                ? tr("clearDays")
+                : tr("everyDay")}
+            </button>
+          </div>
+          <div className="mt-2 grid grid-cols-7 gap-1.5">
+            {WEEKDAYS.map((day) => {
+              const active = weekdays.includes(day);
+              const weekdayKeys = [
+                "weekdaySun",
+                "weekdayMon",
+                "weekdayTue",
+                "weekdayWed",
+                "weekdayThu",
+                "weekdayFri",
+                "weekdaySat",
+              ] as const;
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  aria-pressed={active}
+                  disabled={pending}
+                  onClick={() => toggleWeekday(day)}
+                  className={`admin-pressable flex min-h-11 items-center justify-center rounded-xl text-xs font-semibold ${
+                    active
+                      ? "bg-[var(--river-blue)] text-white"
+                      : "bg-[var(--chart-paper)] text-[var(--ink-muted)] ring-1 ring-[var(--river-blue)]/15"
+                  } disabled:opacity-50`}
+                >
+                  {tr(weekdayKeys[day])}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <label className="mt-4 block sm:max-w-40">
+          <span className="mb-1.5 block text-sm font-medium text-[var(--ink)]">
+            {tr("capacityPerDate")}
+          </span>
           <input
             type="number"
             min={1}
@@ -233,20 +376,94 @@ export function DatesTab({
             inputMode="numeric"
             value={newCapacity}
             onChange={(e) => setNewCapacity(Number(e.target.value))}
-            aria-label={tr("capacity")}
-            className="min-h-11 w-full rounded-xl border border-[var(--river-blue)]/20 px-3 text-base sm:w-24"
+            disabled={pending}
+            className="min-h-11 w-full rounded-xl border border-[var(--river-blue)]/20 px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker-yellow)]"
           />
-          <button
-            type="button"
-            disabled={pending || !newDate}
-            onClick={handleAddDate}
-            className="admin-pressable-wide inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--marker-yellow)] px-4 text-sm font-semibold text-[var(--ink)] disabled:opacity-50"
+        </label>
+
+        {schedule.ok ? (
+          <div
+            className="mt-4 rounded-xl bg-[var(--chart-paper)] p-3"
+            aria-live="polite"
           >
-            {action === "add" ? <AdminSpinner /> : null}
-            {action === "add" ? tr("adding") : tr("addDate")}
-          </button>
-        </div>
+            <p className="text-sm font-semibold text-[var(--ink)]">
+              {fillCount(tr("schedulePreview"), schedule.newDates.length)}
+            </p>
+            {schedule.duplicateDates.length > 0 ? (
+              <p className="mt-1 text-xs text-[var(--ink-muted)]">
+                {fillCount(tr("existingDatesSkipped"), schedule.duplicateDates.length)}
+              </p>
+            ) : null}
+            {schedule.newDates.length > 0 ? (
+              <details className="mt-2">
+                <summary className="admin-hit-44 flex cursor-pointer items-center text-sm font-semibold text-[var(--river-blue)]">
+                  {tr("reviewDates")}
+                </summary>
+                <ul className="grid max-h-48 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto pb-1 text-sm text-[var(--ink-muted)] sm:grid-cols-3">
+                  {schedule.newDates.map((date) => (
+                    <li key={date}>{formatAdminDateRow(date, localeTag)}</li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          disabled={
+            pending ||
+            !schedule.ok ||
+            schedule.newDates.length === 0 ||
+            newCapacity < 1 ||
+            newCapacity > 999
+          }
+          onClick={handleAddDates}
+          className="admin-pressable-wide mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[var(--marker-yellow)] px-4 text-sm font-semibold text-[var(--ink)] disabled:opacity-50 sm:w-auto"
+        >
+          {action === "add" ? <AdminSpinner /> : null}
+          {action === "add"
+            ? tr("adding")
+            : schedule.ok
+              ? schedule.newDates.length > 0
+                ? fillCount(tr("addDates"), schedule.newDates.length)
+                : tr("noNewDates")
+              : tr("addDatesEmpty")}
+        </button>
+        <p className="mt-2 text-xs text-[var(--ink-muted)]">
+          {tr("dateFormatHint")}
+        </p>
       </div>
+
+      {dates.length > 0 ? (
+        <div className="sticky top-[4.75rem] z-10 rounded-2xl bg-[var(--chart-paper)]/95 p-2.5 shadow-[0_10px_30px_-20px_rgba(15,39,64,0.55)] ring-1 ring-[var(--river-blue)]/15 backdrop-blur">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={selectVisibleDates}
+              className="admin-pressable min-h-11 rounded-full bg-white px-3 text-sm font-semibold text-[var(--river-blue)] ring-1 ring-[var(--river-blue)]/15 disabled:opacity-50"
+            >
+              {visibleDates.every((row) => selectedIds.has(row.id))
+                ? tr("deselectVisible")
+                : tr("selectVisible")}
+            </button>
+            <p className="mr-auto text-sm font-medium text-[var(--ink-muted)]">
+              {fillCount(tr("datesSelected"), selectedIds.size)}
+            </p>
+            {selectedIds.size > 0 ? (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => setBulkConfirmOpen(true)}
+                className="admin-pressable min-h-11 rounded-full bg-[var(--river-navy)] px-4 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {fillCount(tr("removeSelected"), selectedIds.size)}
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       {error ? (
         <AdminStatusBanner tone="error" message={error} onRetry={() => reloadDates(tourId)} />
@@ -278,9 +495,27 @@ export function DatesTab({
                       return (
                         <li
                           key={row.id}
-                          className="rounded-2xl bg-white px-4 py-3 ring-1 ring-[var(--river-blue)]/10"
+                          className={`rounded-2xl bg-white px-3 py-3 ring-1 ${
+                            selectedIds.has(row.id)
+                              ? "ring-2 ring-[var(--river-blue)]"
+                              : "ring-[var(--river-blue)]/10"
+                          }`}
                         >
-                          <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <label className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl hover:bg-[var(--river-blue)]/8">
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.has(row.id)}
+                                onChange={() => toggleSelected(row.id)}
+                                disabled={pending}
+                                className="h-5 w-5 accent-[var(--river-blue)]"
+                              />
+                              <span className="sr-only">
+                                {fillVars(tr("selectDate"), {
+                                  date: formatAdminDateRow(row.date, localeTag),
+                                })}
+                              </span>
+                            </label>
                             <div className="min-w-0">
                               <p className="font-semibold text-[var(--ink)]">
                                 {formatAdminDateRow(row.date, localeTag)}
@@ -327,7 +562,7 @@ export function DatesTab({
                             <button
                               type="button"
                               disabled={pending}
-                              onClick={() => handleRemoveClick(row.id, row.booked_count)}
+                              onClick={() => handleRemoveClick(row.id)}
                               className="admin-pressable min-h-11 rounded-full px-3 text-sm font-medium text-[var(--river-blue)] hover:bg-[var(--river-blue)]/8 disabled:opacity-50"
                             >
                               {row.booked_count > 0 ? tr("closeDate") : tr("removeDate")}
@@ -353,29 +588,20 @@ export function DatesTab({
         </div>
       )}
       <AdminConfirmDialog
-        open={dateConfirm?.kind === "close"}
-        title={tr("closeDateConfirmTitle")}
-        message={tr("hasBookingsWarning")}
-        hint={tr("closeDateHint")}
-        confirmLabel={tr("closeDate")}
-        variant="primary"
-        pending={action === "close"}
-        onCancel={() => {
-          if (action !== "close") setDateConfirm(null);
-        }}
-        onConfirm={confirmDateAction}
-      />
-      <AdminConfirmDialog
-        open={dateConfirm?.kind === "remove"}
-        title={tr("removeDateConfirmTitle")}
-        message={tr("removeDateConfirm")}
-        confirmLabel={tr("removeDate")}
+        open={bulkConfirmOpen}
+        title={tr("removeDatesConfirmTitle")}
+        message={fillVars(tr("removeDatesConfirm"), {
+          removed: selectedEmpty,
+          closed: selectedBooked,
+        })}
+        hint={selectedBooked > 0 ? tr("removeDatesHint") : undefined}
+        confirmLabel={fillCount(tr("removeSelected"), selectedIds.size)}
         variant="destructive"
         pending={action === "remove"}
         onCancel={() => {
-          if (action !== "remove") setDateConfirm(null);
+          if (action !== "remove") setBulkConfirmOpen(false);
         }}
-        onConfirm={confirmDateAction}
+        onConfirm={confirmBulkRemove}
       />
     </div>
   );

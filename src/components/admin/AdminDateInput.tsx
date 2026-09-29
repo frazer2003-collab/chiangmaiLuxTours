@@ -9,6 +9,7 @@ type Props = {
   onChange: (iso: string) => void;
   disabled?: boolean;
   describedBy?: string;
+  showHint?: boolean;
 };
 
 export function AdminDateInput(props: Props) {
