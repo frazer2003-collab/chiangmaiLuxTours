@@ -13,6 +13,8 @@ import {
   closedCapacity,
   validateBatchDates,
 } from "@/lib/admin-date-schedule";
+import { shouldNotifyManualConfirmation } from "@/lib/email/booking-email";
+import { notifyStaffOfManualConfirmation } from "@/lib/email/notify-booking";
 
 export type ActionResult<T = void> =
   | { ok: true; data?: T }
@@ -135,6 +137,22 @@ export async function updateBooking(input: {
       .eq("id", input.id);
 
     if (updateError) return { ok: false, error: updateError.message };
+
+    if (
+      shouldNotifyManualConfirmation(
+        prev.status,
+        input.status,
+        prev.stripe_payment_id,
+      )
+    ) {
+      try {
+        await notifyStaffOfManualConfirmation(input.id);
+      } catch (emailError) {
+        // The status change is already saved; surface the outage in logs
+        // without making staff repeat the update.
+        console.error("Manual confirmation email failed:", emailError);
+      }
+    }
 
     await revalidateAdmin();
     return { ok: true };

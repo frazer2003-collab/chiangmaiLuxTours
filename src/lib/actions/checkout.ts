@@ -7,6 +7,7 @@ import { isStripeConfigured, getSiteUrl, thbToStripeAmount } from "@/lib/stripe/
 import { getStripe } from "@/lib/stripe/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { DATES_UNAVAILABLE } from "@/lib/guest-legal";
+import { notifyStaffOfBookingReceived } from "@/lib/email/notify-booking";
 
 import type { PassengerFormState } from "@/lib/booking-passengers";
 
@@ -97,6 +98,13 @@ export async function startStripeCheckout(input: {
 
     if (!session.url) {
       return { ok: false, error: "Could not start payment. Please try again." };
+    }
+
+    try {
+      await notifyStaffOfBookingReceived(bookingResult.bookingId);
+    } catch (emailError) {
+      // A notification outage must not strand a valid checkout session.
+      console.error("Booking received email failed:", emailError);
     }
 
     return { ok: true, checkoutUrl: session.url };
