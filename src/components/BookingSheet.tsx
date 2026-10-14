@@ -378,7 +378,7 @@ export function BookingSheet({ open, tourId, onClose, returnFocusRef }: Props) {
                         return (
                           <label
                             key={d}
-                            className={`flex min-h-11 cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-sm transition ${
+                            className={`relative flex min-h-11 cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-sm transition ${
                               date === d
                                 ? "border-[var(--marker-yellow)] bg-[var(--marker-yellow)]/15 font-medium"
                                 : "border-[var(--river-blue)]/20 bg-white hover:border-[var(--river-blue)]/40"
