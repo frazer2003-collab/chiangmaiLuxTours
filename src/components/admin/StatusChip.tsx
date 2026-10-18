@@ -6,6 +6,7 @@ const statusStyles: Record<BookingStatus, string> = {
   pending: "bg-[var(--marker-yellow)]/25 text-[var(--ink)]",
   confirmed: "bg-[var(--river-blue)]/12 text-[var(--river-blue-deep)]",
   cancelled: "bg-[var(--ink-muted)]/15 text-[var(--ink-muted)]",
+  to_refund: "bg-[var(--marker-yellow)]/40 text-[var(--ink)]",
   refunded: "bg-[var(--river-navy)]/10 text-[var(--river-navy)]",
 };
 

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServiceClient } from "@/lib/supabase/service";
 import { notifyStaffOfPaidBooking } from "@/lib/email/notify-booking";
+import { setBookingStatus } from "@/lib/bookings/set-booking-status";
+import type { DbBooking } from "@/lib/db/types";
 import { getStripeWebhookSecret } from "@/lib/stripe/env";
 import { getStripe } from "@/lib/stripe/server";
 
@@ -40,6 +42,33 @@ async function confirmBookingPayment(session: Stripe.Checkout.Session): Promise<
   await notifyStaffOfPaidBooking(bookingId);
 
   return bookingId;
+}
+
+async function markSucceededRefund(refund: Stripe.Refund): Promise<void> {
+  if (refund.status !== "succeeded") return;
+
+  const bookingId = refund.metadata?.booking_id ?? null;
+  const paymentIntentId =
+    typeof refund.payment_intent === "string" ? refund.payment_intent : null;
+  if (!bookingId && !paymentIntentId) return;
+
+  const supabase = createServiceClient();
+  const request = supabase.from("bookings").select("*");
+  const { data, error } = await (bookingId
+    ? request.eq("id", bookingId)
+    : request.eq("stripe_payment_id", paymentIntentId)
+  ).maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data || data.status === "refunded") return;
+
+  const result = await setBookingStatus(supabase, data as DbBooking, {
+    status: "refunded",
+    internalNotes: data.internal_notes,
+    refundNote: data.refund_note,
+    stripeRefundId: refund.id,
+  });
+  if (!result.ok) throw new Error(result.error);
 }
 
 async function cancelPendingBooking(session: Stripe.Checkout.Session): Promise<void> {
@@ -95,6 +124,10 @@ export async function POST(request: Request) {
     if (event.type === "checkout.session.expired") {
       const session = event.data.object as Stripe.Checkout.Session;
       await cancelPendingBooking(session);
+    }
+
+    if (event.type === "refund.updated" || event.type === "refund.created") {
+      await markSucceededRefund(event.data.object as Stripe.Refund);
     }
   } catch (error) {
     console.error("Stripe webhook handler error:", error);

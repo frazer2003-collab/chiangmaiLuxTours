@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/auth/staff";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
-  bookingCountsTowardCapacity,
   type BookingStatus,
   type DbBooking,
   type DbTourDate,
@@ -15,6 +14,13 @@ import {
 } from "@/lib/admin-date-schedule";
 import { shouldNotifyManualConfirmation } from "@/lib/email/booking-email";
 import { notifyStaffOfManualConfirmation } from "@/lib/email/notify-booking";
+import { setBookingStatus } from "@/lib/bookings/set-booking-status";
+import { getStripe } from "@/lib/stripe/server";
+import {
+  bookingStatusForStripeRefund,
+  manualRefundBlockReason,
+} from "@/lib/stripe/refund-booking";
+import type Stripe from "stripe";
 
 export type ActionResult<T = void> =
   | { ok: true; data?: T }
@@ -94,49 +100,32 @@ export async function updateBooking(input: {
     }
 
     const prev = existing as DbBooking;
-    const wasActive = bookingCountsTowardCapacity(prev.status);
-    const willBeActive = bookingCountsTowardCapacity(input.status);
-    const delta =
-      (willBeActive ? prev.passengers : 0) - (wasActive ? prev.passengers : 0);
-
-    if (delta !== 0 && prev.tour_date_id) {
-      const { data: dateRow, error: dateError } = await supabase
-        .from("tour_dates")
-        .select("booked_count, capacity")
-        .eq("id", prev.tour_date_id)
-        .single();
-
-      if (dateError || !dateRow) {
-        return { ok: false, error: "Could not update seat count." };
-      }
-
-      const nextCount = dateRow.booked_count + delta;
-      if (nextCount < 0 || nextCount > dateRow.capacity) {
-        return {
-          ok: false,
-          error: "Not enough capacity to restore this booking.",
-        };
-      }
-
-      const { error: countError } = await supabase
-        .from("tour_dates")
-        .update({ booked_count: nextCount })
-        .eq("id", prev.tour_date_id);
-
-      if (countError) return { ok: false, error: countError.message };
+    const block = manualRefundBlockReason(
+      prev.status,
+      input.status,
+      Boolean(prev.stripe_payment_id),
+    );
+    if (block === "use_stripe") {
+      return {
+        ok: false,
+        error: "Use Refund in Stripe for a paid booking. PromptPay can be marked refunded after it is To refund.",
+      };
+    }
+    if (block === "to_refund_from_stripe") {
+      return {
+        ok: false,
+        error: "To refund is set when a PromptPay refund is issued in Stripe.",
+      };
+    }
+    if (block === "refund_in_progress") {
+      return {
+        ok: false,
+        error: "This PromptPay refund is still open. Mark it Refunded or Cancelled, not confirmed.",
+      };
     }
 
-    const { error: updateError } = await supabase
-      .from("bookings")
-      .update({
-        status: input.status,
-        internal_notes: input.internalNotes.slice(0, 500),
-        refund_note: input.refundNote.slice(0, 500),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", input.id);
-
-    if (updateError) return { ok: false, error: updateError.message };
+    const statusResult = await setBookingStatus(supabase, prev, input);
+    if (!statusResult.ok) return statusResult;
 
     if (
       shouldNotifyManualConfirmation(
@@ -191,6 +180,132 @@ export async function markBookingRefunded(input: {
   } catch {
     return { ok: false, error: "Unauthorized" };
   }
+}
+
+export async function issueStripeRefund(input: {
+  id: string;
+  refundNote: string;
+}): Promise<ActionResult<BookingStatus>> {
+  try {
+    const { supabase } = await requireStaff();
+    const { data: existing, error: fetchError } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("id", input.id)
+      .single();
+
+    if (fetchError || !existing) {
+      return { ok: false, error: "Booking not found." };
+    }
+
+    const prev = existing as DbBooking;
+    if (prev.status === "refunded" || prev.status === "to_refund") {
+      return { ok: true, data: prev.status };
+    }
+    if (!prev.stripe_payment_id) {
+      return { ok: false, error: "This booking has no Stripe payment to refund." };
+    }
+
+    const stripe = getStripe();
+    const paymentIntentId = await resolvePaymentIntentId(stripe, prev.stripe_payment_id);
+    const paymentMethod = await paymentMethodType(stripe, paymentIntentId);
+    const refund = await createOrLoadRefund(stripe, paymentIntentId, prev.id);
+    const nextStatus = bookingStatusForStripeRefund(paymentMethod, refund.status);
+    if (!nextStatus) {
+      return {
+        ok: false,
+        error: refund.failure_reason
+          ? `Stripe could not refund this payment (${refund.failure_reason}).`
+          : "Stripe could not refund this payment.",
+      };
+    }
+
+    const result = await setBookingStatus(supabase, prev, {
+      status: nextStatus,
+      internalNotes: prev.internal_notes,
+      refundNote: input.refundNote,
+      stripeRefundId: refund.id,
+    });
+    if (!result.ok) return result;
+
+    await revalidateAdmin();
+    return { ok: true, data: nextStatus };
+  } catch (error) {
+    if (error instanceof Error && error.message !== "Unauthorized") {
+      return { ok: false, error: error.message };
+    }
+    return { ok: false, error: "Unauthorized" };
+  }
+}
+
+async function resolvePaymentIntentId(stripe: Stripe, reference: string): Promise<string> {
+  if (reference.startsWith("pi_")) return reference;
+  if (reference.startsWith("cs_")) {
+    const session = await stripe.checkout.sessions.retrieve(reference);
+    const paymentIntent = session.payment_intent;
+    const id = typeof paymentIntent === "string" ? paymentIntent : paymentIntent?.id;
+    if (!id) throw new Error("This checkout has no payment to refund.");
+    return id;
+  }
+  if (reference.startsWith("ch_")) {
+    const charge = await stripe.charges.retrieve(reference);
+    const paymentIntent = charge.payment_intent;
+    const id = typeof paymentIntent === "string" ? paymentIntent : paymentIntent?.id;
+    if (!id) throw new Error("This charge has no payment to refund.");
+    return id;
+  }
+  throw new Error("This booking has no Stripe payment to refund.");
+}
+
+async function paymentMethodType(stripe: Stripe, paymentIntentId: string): Promise<string> {
+  const intent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+    expand: ["latest_charge"],
+  });
+  const latestCharge = intent.latest_charge;
+  const charge =
+    typeof latestCharge === "string"
+      ? await stripe.charges.retrieve(latestCharge)
+      : latestCharge;
+  if (charge && typeof charge === "object") {
+    return charge.payment_method_details?.type ?? "card";
+  }
+  return "card";
+}
+
+async function createOrLoadRefund(
+  stripe: Stripe,
+  paymentIntentId: string,
+  bookingId: string,
+): Promise<Stripe.Refund> {
+  try {
+    return await stripe.refunds.create(
+      {
+        payment_intent: paymentIntentId,
+        metadata: { booking_id: bookingId },
+      },
+      { idempotencyKey: `booking-refund/${bookingId}` },
+    );
+  } catch (error) {
+    if (!isChargeAlreadyRefunded(error)) throw error;
+    const existing = await stripe.refunds.list({
+      payment_intent: paymentIntentId,
+      limit: 10,
+    });
+    const refund =
+      existing.data.find((item) => item.status !== "failed" && item.status !== "canceled") ??
+      existing.data[0];
+    if (!refund) throw error;
+    return refund;
+  }
+}
+
+function isChargeAlreadyRefunded(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: string }).code === "charge_already_refunded"
+  );
 }
 
 export async function updateTourPrice(input: {

@@ -14,6 +14,7 @@ export const translations = {
     pending: "Pending",
     confirmed: "Confirmed",
     cancelled: "Cancelled",
+    to_refund: "To refund",
     refunded: "Refunded",
     all: "All",
     upcoming: "Upcoming",
@@ -29,9 +30,17 @@ export const translations = {
     save: "Save",
     saved: "Saved",
     refund: "Mark refunded",
+    refundStripe: "Refund in Stripe",
     refundNote: "Refund note",
-    refundConfirm: "Mark this booking as refunded? Payment is handled offline until Stripe is connected.",
+    refundConfirm: "Mark this booking as refunded? There is no Stripe payment, so this only updates the booking.",
     refundConfirmTitle: "Mark as refunded?",
+    refundStripeConfirm:
+      "Refund the full Stripe payment? Card payments are marked Refunded. PromptPay payments are marked To refund, the same way Stripe shows a refund that still needs the guest's bank account. After the money has been sent, set the status to Refunded.",
+    refundStripeConfirmTitle: "Refund in Stripe?",
+    toRefundHint:
+      "Stripe is still completing this PromptPay refund and emails the guest for their bank account. After the money has been sent, set the status to Refunded.",
+    refundUseStripe:
+      "Paid bookings are refunded in Stripe. After a PromptPay refund is To refund, you can set it to Refunded.",
     confirm: "Confirm",
     cancel: "Cancel",
     addDate: "Add date",
@@ -150,6 +159,7 @@ export const translations = {
     pending: "รอดำเนินการ",
     confirmed: "ยืนยันแล้ว",
     cancelled: "ยกเลิก",
+    to_refund: "รอคืนเงิน",
     refunded: "คืนเงินแล้ว",
     all: "ทั้งหมด",
     upcoming: "ที่จะมาถึง",
@@ -165,9 +175,17 @@ export const translations = {
     save: "บันทึก",
     saved: "บันทึกแล้ว",
     refund: "ทำเครื่องหมายคืนเงิน",
+    refundStripe: "คืนเงินผ่าน Stripe",
     refundNote: "หมายเหตุการคืนเงิน",
-    refundConfirm: "ทำเครื่องหมายว่าคืนเงินแล้ว? การชำระเงินจัดการนอกระบบจนกว่า Stripe จะเชื่อมต่อ",
+    refundConfirm: "ทำเครื่องหมายว่าคืนเงินแล้ว? การจองนี้ไม่มีการชำระผ่าน Stripe จึงเปลี่ยนเฉพาะสถานะในระบบ",
     refundConfirmTitle: "ทำเครื่องหมายคืนเงิน?",
+    refundStripeConfirm:
+      "คืนเงินผ่าน Stripe ทั้งจำนวน? บัตรจะเป็นสถานะคืนเงินแล้ว ส่วนพร้อมเพย์จะเป็นรอคืนเงิน เหมือนที่ Stripe แสดงการคืนเงินที่ยังรอเลขบัญชีผู้โดยสาร เมื่อโอนเงินแล้ว ให้เปลี่ยนสถานะเป็นคืนเงินแล้ว",
+    refundStripeConfirmTitle: "คืนเงินผ่าน Stripe?",
+    toRefundHint:
+      "Stripe ยังคืนเงินพร้อมเพย์ไม่เสร็จ และจะส่งอีเมลขอเลขบัญชีผู้โดยสาร เมื่อโอนเงินแล้ว ให้เปลี่ยนสถานะเป็นคืนเงินแล้ว",
+    refundUseStripe:
+      "การจองที่จ่ายผ่าน Stripe ต้องคืนเงินผ่าน Stripe ก่อน เมื่อสถานะเป็นรอคืนเงินแล้ว จึงเปลี่ยนเป็นคืนเงินแล้วได้",
     confirm: "ยืนยัน",
     cancel: "ยกเลิก",
     addDate: "เพิ่มวันที่",
@@ -282,7 +300,7 @@ export function t(locale: AdminLocale, key: TranslationKey): string {
 
 export function statusLabel(
   locale: AdminLocale,
-  status: "pending" | "confirmed" | "cancelled" | "refunded",
+  status: "pending" | "confirmed" | "cancelled" | "to_refund" | "refunded",
 ): string {
   return t(locale, status);
 }

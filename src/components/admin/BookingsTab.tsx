@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { tours } from "@/lib/tours";
 import type { DbBooking, BookingStatus, GuestGender } from "@/lib/db/types";
 import { getBookingPassengers } from "@/lib/booking-passengers";
-import { fetchAdminBookings, updateBooking, markBookingRefunded } from "@/lib/actions/admin";
+import {
+  fetchAdminBookings,
+  updateBooking,
+  markBookingRefunded,
+  issueStripeRefund,
+} from "@/lib/actions/admin";
 import { useAdminLocale } from "./AdminLocaleProvider";
 import { StatusChip } from "./StatusChip";
 import { IconClose } from "@/components/icons";
@@ -169,12 +174,19 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
 
   function refundBooking() {
     if (!selected) return;
+    const booking = selected;
+    const paidInStripe = Boolean(booking.stripe_payment_id);
     setAction("refund");
     startTransition(async () => {
-      const result = await markBookingRefunded({
-        id: selected.id,
-        refundNote,
-      });
+      const result = paidInStripe
+        ? await issueStripeRefund({
+            id: booking.id,
+            refundNote,
+          })
+        : await markBookingRefunded({
+            id: booking.id,
+            refundNote,
+          });
       setAction(null);
       setRefundConfirmOpen(false);
       if (!result.ok) {
@@ -182,10 +194,20 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
         setMessage(result.error);
         return;
       }
-      setStatus("refunded");
+      const nextStatus = paidInStripe && result.data ? result.data : "refunded";
+      setStatus(nextStatus);
       setMessageTone("success");
       setMessage(tr("saved"));
       refresh({ showSkeleton: false });
+      setSelected((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: nextStatus,
+              refund_note: refundNote,
+            }
+          : null,
+      );
     });
   }
 
@@ -351,13 +373,26 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
               <div>
                 <p className="mb-2 text-sm font-medium">{tr("status")}</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {(["pending", "confirmed", "cancelled", "refunded"] as const).map(
+                  {(["pending", "confirmed", "cancelled", "to_refund", "refunded"] as const).map(
                     (value) => (
                       <button
                         key={value}
                         type="button"
-                        onClick={() => setStatus(value)}
-                        className={`admin-pressable min-h-11 rounded-xl px-3 text-sm font-medium transition ${
+                        disabled={value === "to_refund" && selected.status !== "to_refund"}
+                        onClick={() => {
+                          if (
+                            value === "refunded" &&
+                            selected.stripe_payment_id &&
+                            selected.status !== "to_refund" &&
+                            selected.status !== "refunded"
+                          ) {
+                            setMessageTone("error");
+                            setMessage(tr("refundUseStripe"));
+                            return;
+                          }
+                          setStatus(value);
+                        }}
+                        className={`admin-pressable min-h-11 rounded-xl px-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-45 ${
                           status === value
                             ? "bg-[var(--river-blue)] text-white"
                             : "bg-white ring-1 ring-[var(--river-blue)]/15 text-[var(--ink-muted)]"
@@ -385,7 +420,17 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
                 />
               </div>
 
-              {(status === "refunded" || selected.status === "refunded" || selected.refund_note) ? (
+              {selected.status === "to_refund" ? (
+                <p className="rounded-xl bg-[var(--marker-yellow)]/25 px-3 py-2 text-sm leading-relaxed text-[var(--ink)]">
+                  {tr("toRefundHint")}
+                </p>
+              ) : null}
+
+              {(status === "refunded" ||
+                status === "to_refund" ||
+                selected.status === "refunded" ||
+                selected.status === "to_refund" ||
+                selected.refund_note) ? (
                 <div>
                   <label htmlFor="refund-note" className="mb-1.5 block text-sm font-medium">
                     {tr("refundNote")}
@@ -460,7 +505,7 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
             </div>
 
             <div className="flex flex-col gap-2 border-t border-[var(--river-blue)]/15 px-4 py-3">
-              {selected.status !== "refunded" ? (
+              {selected.status !== "refunded" && selected.status !== "to_refund" ? (
                 <button
                   type="button"
                   disabled={pending}
@@ -468,7 +513,11 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--river-navy)]/10 px-4 text-sm font-semibold text-[var(--river-navy)] hover:bg-[var(--river-navy)]/15 disabled:opacity-50"
                 >
                   {action === "refund" ? <AdminSpinner /> : null}
-                  {action === "refund" ? tr("saving") : tr("refund")}
+                  {action === "refund"
+                    ? tr("saving")
+                    : selected.stripe_payment_id
+                      ? tr("refundStripe")
+                      : tr("refund")}
                 </button>
               ) : null}
               <button
@@ -487,9 +536,17 @@ export function BookingsTab({ initialBookings }: { initialBookings: DbBooking[] 
 
       <AdminConfirmDialog
         open={refundConfirmOpen}
-        title={tr("refundConfirmTitle")}
-        message={tr("refundConfirm")}
-        confirmLabel={tr("refund")}
+        title={
+          selected?.stripe_payment_id
+            ? tr("refundStripeConfirmTitle")
+            : tr("refundConfirmTitle")
+        }
+        message={
+          selected?.stripe_payment_id
+            ? tr("refundStripeConfirm")
+            : tr("refundConfirm")
+        }
+        confirmLabel={selected?.stripe_payment_id ? tr("refundStripe") : tr("refund")}
         variant="destructive"
         pending={action === "refund"}
         onCancel={() => {

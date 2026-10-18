@@ -1,4 +1,9 @@
-export type BookingStatus = "pending" | "confirmed" | "cancelled" | "refunded";
+export type BookingStatus =
+  | "pending"
+  | "confirmed"
+  | "cancelled"
+  | "to_refund"
+  | "refunded";
 export type GuestGender = "male" | "female" | "na";
 
 export type StoredPassengerDetail = {
@@ -44,6 +49,7 @@ export type DbBooking = {
   internal_notes: string;
   refund_note: string;
   stripe_payment_id: string | null;
+  stripe_refund_id?: string | null;
   created_at: string;
   updated_at: string;
 };
