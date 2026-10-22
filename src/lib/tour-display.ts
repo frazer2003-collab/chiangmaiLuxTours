@@ -2,11 +2,9 @@ import { BOOK_ROUTE_LABEL } from "@/lib/guest-ui";
 import type { CatalogTour } from "@/lib/tour-catalog";
 
 const TIER_BADGES: Record<string, string> = {
-  "chiang-mai-luang-prabang": "Premium slow boat · 2 days",
-  "chiang-rai-luang-prabang": "Premium slow boat · 1 day",
-  "chiang-khong-luang-prabang": "Slow boat · 1 day",
-  "huay-xai-luang-prabang": "Slow boat · 1 day",
-  "chiang-rai-slowboat-luang-prabang": "Van + slow boat · 2 days",
+  "chiang-rai-luang-prabang": "Luxury slow boat · 2 days",
+  "chiang-rai-slowboat-luang-prabang": "Local boat · 2 days",
+  "chiang-khong-luang-prabang": "Luxury slow boat · 2 days",
   "chiang-rai-train-luang-prabang": "Van + train · 1 day",
   "chiang-rai-train-vang-vieng": "Van + train · 1 day",
   "chiang-rai-train-vientiane": "Van + train · 1 day",
@@ -20,16 +18,13 @@ const BUDGET_TOUR_IDS = new Set([
 ]);
 
 /**
- * Chart labels name whatever actually distinguishes a route: the departure hub
- * for the four original boat routes, and the mode or destination for the five
- * that all leave from Chiang Rai.
+ * Chart labels name whatever distinguishes a route: the boat type when two
+ * Chiang Rai boats share a destination, otherwise the hub or train destination.
  */
 const CHART_LABELS: Record<string, string> = {
-  "chiang-mai-luang-prabang": "Chiang Mai",
-  "chiang-rai-luang-prabang": "Chiang Rai",
+  "chiang-rai-luang-prabang": "Luxury boat",
+  "chiang-rai-slowboat-luang-prabang": "Local boat",
   "chiang-khong-luang-prabang": "Chiang Khong",
-  "huay-xai-luang-prabang": "Huay Xai",
-  "chiang-rai-slowboat-luang-prabang": "Slow boat",
   "chiang-rai-train-luang-prabang": "Train · Luang Prabang",
   "chiang-rai-train-vang-vieng": "Train · Vang Vieng",
   "chiang-rai-train-vientiane": "Train · Vientiane",
@@ -63,9 +58,8 @@ export function destinationCode(destination: string): string {
 }
 
 /**
- * Route label for staff pickers. Five routes leave from Chiang Rai and three
- * end in Luang Prabang, so neither endpoint alone identifies a route — the
- * transport tier is what staff actually need to tell them apart.
+ * Route label for staff pickers. Several routes share Chiang Rai or Luang
+ * Prabang, so the transport tier is what staff need to tell them apart.
  */
 export function adminRouteLabel(tour: { id: string; from: string; to: string }): string {
   const tier = TIER_BADGES[tour.id];

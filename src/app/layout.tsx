@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   metadataBase,
   title: "Mekong Transfer | Book Mekong Slow Boat Tours",
   description:
-    "Licensed Mekong slow boat, van, and train routes from Chiang Mai, Chiang Rai, Chiang Khong, and Huay Xai to Luang Prabang, Vang Vieng, and Vientiane. Browse routes and book online.",
+    "Licensed Mekong slow boat, van, and train routes from Chiang Rai and Chiang Khong to Luang Prabang, Vang Vieng, and Vientiane. Browse routes and book online.",
   openGraph: {
     siteName: "Mekong Transfer",
     type: "website",

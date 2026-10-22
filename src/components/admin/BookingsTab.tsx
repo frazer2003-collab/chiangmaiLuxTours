@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { tours } from "@/lib/tours";
+import { tourDisplayName } from "@/lib/tours";
 import type { DbBooking, BookingStatus, GuestGender } from "@/lib/db/types";
 import { getBookingPassengers } from "@/lib/booking-passengers";
 import {
@@ -32,7 +32,7 @@ function formatDisplayDate(iso: string, locale: string) {
 }
 
 function tourName(id: string) {
-  return tours.find((t) => t.id === id)?.name ?? id;
+  return tourDisplayName(id);
 }
 
 function adminGenderLabel(

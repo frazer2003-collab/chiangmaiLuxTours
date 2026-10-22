@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { getCatalogTours, getTourFromCatalog } from "@/lib/tour-catalog";
+import { tourDisplayName } from "@/lib/tours";
 import { PRODUCTION_SITE_URL } from "@/lib/site-url";
 import {
   buildBookingEmail,
@@ -57,7 +58,7 @@ async function sendBookingNotification(
   }
 
   const tour = getTourFromCatalog(await getCatalogTours(), booking.tour_id);
-  const routeName = tour?.name ?? booking.tour_id;
+  const routeName = tour?.name ?? tourDisplayName(booking.tour_id);
   const email = buildBookingEmail({
     kind,
     booking,

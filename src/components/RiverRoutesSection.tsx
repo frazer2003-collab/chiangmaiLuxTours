@@ -89,7 +89,7 @@ export function RiverRoutesSection({
             River routes
           </h2>
           <p className="mt-3 text-base leading-relaxed text-[var(--ink-muted)]">
-            Eight routes into Laos — by slow boat, van, or train, ending in Luang Prabang,
+            Six routes into Laos — by slow boat, van, or train, ending in Luang Prabang,
             Vang Vieng, or Vientiane.
           </p>
         </div>

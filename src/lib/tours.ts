@@ -1,198 +1,91 @@
 import type { Tour } from "./types";
-import {
-  CONTACT,
-  SHARED_DURATION_DETAIL,
-  SHARED_EXPERIENCES,
-  SHARED_INCLUDES,
-  SHARED_PERFECT_FOR,
-  SHARED_TOUR_INTRO,
-} from "./types";
+import { CONTACT } from "./types";
 
 export { CONTACT };
 
 export const tours: Tour[] = [
   {
-    id: "chiang-mai-luang-prabang",
-    name: "Chiang Mai → Luang Prabang",
-    posterTitle: "CHIANG MAI – LUANG PRABANG",
-    tagline: "Overnight in Huay Xai, then the river to Luang Prabang",
+    id: "chiang-rai-luang-prabang",
+    name: "Chiang Rai → Luang Prabang (Luxury Boat)",
+    posterTitle: "CHIANG RAI – LUANG PRABANG (LUXURY BOAT)",
+    tagline: "Two days on a luxury slow boat, with meals and hotel drop-off",
     headline: "Cruise the Mighty Mekong",
-    intro: SHARED_TOUR_INTRO,
+    intro:
+      "Hotel pickup in Chiang Rai, then a luxury slow boat down the Mekong. Lunch both days, breakfast on day two, tea and coffee, a riverside village stop, and the Pak Ou Caves. Overnight in Pakbeng, then a minivan to your hotel in Luang Prabang.",
     duration: "2 days · 1 night",
-    durationDetail: "Overnight stop, then about 8–10 hours on the river",
-    route: "Chiang Mai → Huay Xai → Luang Prabang",
-    routeDetail: "Chiang Mai – Huay Xai (overnight) – Luang Prabang",
-    from: "Chiang Mai",
+    durationDetail: "Day 1: Chiang Rai to Pakbeng. Day 2: Pakbeng to Luang Prabang, with Pak Ou Caves",
+    route: "Chiang Rai → Huay Xai → Pakbeng → Luang Prabang",
+    routeDetail: "Chiang Rai – Huay Xai – Pakbeng (overnight) – Pak Ou Caves – Luang Prabang",
+    from: "Chiang Rai",
     to: "Luang Prabang",
-    perfectFor: SHARED_PERFECT_FOR,
+    perfectFor: "Travellers who want a guided two-day Mekong cruise with meals on board",
     overnightNote:
-      "This journey stops overnight in Huay Xai, then continues to Luang Prabang the next day.",
-    price: "฿8,300 / person",
-    meetingPoint: "Chiang Mai — hotel transfer included",
+      "Overnight in Pakbeng is not included. You transfer on your own to a hotel you have booked, then rejoin the boat the next morning.",
+    price: "฿6,300 / person",
+    meetingPoint: "Chiang Rai — hotel pickup at 5:00 am",
     highlights: [
-      "Premium slow boat · 2 days · 1 night",
-      "Overnight stop in Huay Xai en route to Luang Prabang",
+      "Luxury slow boat · 2 days · 1 night",
+      "Lunch both days, breakfast on day two, tea and coffee",
+      "Riverside village stop and Pak Ou Caves",
       `TAT Licence ID ${CONTACT.licence}`,
     ],
-    experiences: SHARED_EXPERIENCES,
+    experiences: [
+      { title: "Hotel Transfers", description: "Pickup in Chiang Rai and drop-off at your hotel in Luang Prabang." },
+      { title: "Luxury Slow Boat", description: "Huay Xai to Pakbeng on day 1, Pakbeng to Luang Prabang on day 2." },
+      { title: "Onboard Meals", description: "Lunch both days, breakfast on day two, plus tea and coffee." },
+      { title: "Pak Ou Caves", description: "Guided stop at Tham Ting and the Baan Bo craft village." },
+    ],
     itinerary: [
       {
         label: "Day 1",
         detail:
-          "Depart Chiang Mai with hotel transfer included. Travel to Huay Xai for an overnight stop on the Mekong corridor.",
+          "Private minivan pickup from your Chiang Rai hotel at 5:00 am. Thai immigration at the Chiang Khong checkpoint around 6:45 am, then the Friendship Bridge shuttle to Huay Xai. Laos visa on arrival about 7:30–8:30 am (about 40 USD, paid by you). Private transfer to the Huay Xai slow boat pier. The luxury slow boat departs between 9:00 and 10:00 am for Pakbeng, with lunch, tea, and coffee on board and a guided stop at a riverside village. Arrive Pakbeng around 4:00 pm and transfer on your own to your pre-booked hotel.",
       },
       {
         label: "Day 2",
         detail:
-          "Continue downstream from Huay Xai to Luang Prabang by slow boat. About 8–10 hours on the river, depending on the season.",
+          "Return to Pakbeng pier at 8:00 am for breakfast on board. Depart between 8:30 and 9:00 am. Buffet lunch, coffee, and tea are served on the way to Luang Prabang, with stops at Baan Bo craft village and the Pak Ou Caves (Tham Ting). Arrive at the Luang Prabang slow boat terminal around 3:30 pm, then a minivan to your hotel.",
       },
     ],
-    includes: SHARED_INCLUDES,
-    demoDates: ["2026-08-15", "2026-08-22", "2026-09-05", "2026-09-12"],
+    includes: [
+      "Hotel pickup in Chiang Rai",
+      "Border shuttle and pier transfer",
+      "Luxury slow boat ticket (2 days)",
+      "Lunch both days and breakfast on day two",
+      "Tea and coffee",
+      "Guided village stop and Pak Ou Caves",
+      "Minivan drop-off at your Luang Prabang hotel",
+    ],
+    demoDates: ["2026-08-26", "2026-09-05", "2026-09-19"],
     chartPosition: 1,
     image: "/photos/boat-yellow.jpg",
     imageAlt: "Mekong slow boat with yellow hull on the river below jungle hills",
     gallery: [
       { src: "/photos/cabin.jpg", alt: "Wooden cabin seating along the slow boat aisle" },
-      { src: "/photos/hotel-room.jpg", alt: "Overnight guesthouse room on the Chiang Mai route" },
-      { src: "/photos/hotel-terrace.jpg", alt: "River-view terrace at the overnight stop" },
-    ],
-  },
-  {
-    id: "chiang-rai-luang-prabang",
-    name: "Chiang Rai → Luang Prabang",
-    posterTitle: "CHIANG RAI – LUANG PRABANG",
-    tagline: "Same-day boat from Chiang Rai via Huay Xai",
-    headline: "Cruise the Mighty Mekong",
-    intro: SHARED_TOUR_INTRO,
-    duration: "1 day trip",
-    durationDetail: SHARED_DURATION_DETAIL,
-    route: "Chiang Rai → Huay Xai → Luang Prabang",
-    routeDetail: "Chiang Rai – Huay Xai – Luang Prabang",
-    from: "Chiang Rai",
-    to: "Luang Prabang",
-    perfectFor: SHARED_PERFECT_FOR,
-    price: "฿6,900 / person",
-    meetingPoint: "Chiang Rai — hotel transfer included",
-    highlights: [
-      "Premium slow boat · 1 day trip",
-      "Scenic Mekong route via Huay Xai to Luang Prabang",
-      `TAT Licence ID ${CONTACT.licence}`,
-    ],
-    experiences: SHARED_EXPERIENCES,
-    itinerary: [
-      {
-        label: "Full day",
-        detail:
-          "Hotel pickup in Chiang Rai, transfer via Huay Xai, and slow boat passage to Luang Prabang. About 8–10 hours, depending on the season.",
-      },
-    ],
-    includes: SHARED_INCLUDES,
-    demoDates: ["2026-08-18", "2026-08-25", "2026-09-08"],
-    chartPosition: 2,
-    image: "/photos/boat-passengers.jpg",
-    imageAlt: "Passengers on the open bow of a Mekong slow boat",
-    gallery: [
       { src: "/photos/interior.jpg", alt: "Covered cabin with booth seating and life jackets" },
-      { src: "/photos/van.jpg", alt: "Hotel transfer van included with the route" },
-    ],
-  },
-  {
-    id: "chiang-khong-luang-prabang",
-    name: "Chiang Khong → Luang Prabang",
-    posterTitle: "CHIANG KHONG – LUANG PRABANG",
-    tagline: "Same-day boat from the Chiang Khong border pier",
-    headline: "Cruise the Mighty Mekong",
-    intro: SHARED_TOUR_INTRO,
-    duration: "1 day trip",
-    durationDetail: SHARED_DURATION_DETAIL,
-    route: "Chiang Khong → Huay Xai → Luang Prabang",
-    routeDetail: "Chiang Khong – Huay Xai – Luang Prabang",
-    from: "Chiang Khong",
-    to: "Luang Prabang",
-    perfectFor: SHARED_PERFECT_FOR,
-    price: "฿6,300 / person",
-    meetingPoint: "Chiang Khong — hotel transfer to the pier",
-    highlights: [
-      "Premium slow boat · 1 day trip",
-      "Border pier departure with hotel transfer to the pier",
-      `TAT Licence ID ${CONTACT.licence}`,
-    ],
-    experiences: SHARED_EXPERIENCES,
-    itinerary: [
-      {
-        label: "Full day",
-        detail:
-          "Hotel transfer to Chiang Khong pier, continue via Huay Xai, and slow boat to Luang Prabang. About 8–10 hours, depending on the season.",
-      },
-    ],
-    includes: SHARED_INCLUDES,
-    demoDates: ["2026-08-14", "2026-08-21", "2026-09-04"],
-    chartPosition: 3,
-    image: "/photos/boat-dock.jpg",
-    imageAlt: "Green and red slow boat moored on a Mekong sandbank",
-    gallery: [
-      { src: "/photos/fleet.jpg", alt: "Slow boats lined along the Chiang Khong riverbank" },
-    ],
-  },
-  {
-    id: "huay-xai-luang-prabang",
-    name: "Huay Xai → Luang Prabang",
-    posterTitle: "HUAY XAI – LUANG PRABANG",
-    tagline: "Same-day boat from Huay Xai Village via Pakbeng",
-    headline: "Cruise the Mighty Mekong",
-    intro: SHARED_TOUR_INTRO,
-    duration: "1 day trip",
-    durationDetail: SHARED_DURATION_DETAIL,
-    route: "Huay Xai → Pakbeng → Luang Prabang",
-    routeDetail: "Huay Xai – Pakbeng – Luang Prabang",
-    from: "Huay Xai",
-    to: "Luang Prabang",
-    perfectFor: SHARED_PERFECT_FOR,
-    price: "฿5,800 / person",
-    meetingPoint: "Huay Xai Village, Bokeo Province — with hotel transfer",
-    highlights: [
-      "Premium slow boat · 1 day trip",
-      "Classic Mekong corridor via Pakbeng to Luang Prabang",
-      `TAT Licence ID ${CONTACT.licence}`,
-    ],
-    experiences: SHARED_EXPERIENCES,
-    itinerary: [
-      {
-        label: "Full day",
-        detail:
-          "Depart Huay Xai Village with hotel transfer, pass Pakbeng, and continue to Luang Prabang by slow boat. About 8–10 hours, depending on the season.",
-      },
-    ],
-    includes: SHARED_INCLUDES,
-    demoDates: ["2026-08-27", "2026-09-10", "2026-09-17"],
-    chartPosition: 4,
-    image: "/photos/fleet.jpg",
-    imageAlt: "Slow boat fleet at Huay Xai on the Mekong",
-    gallery: [
-      { src: "/photos/cabin-lounge.jpg", alt: "Wooden lounge seating inside the slow boat" },
     ],
   },
   {
     id: "chiang-rai-slowboat-luang-prabang",
-    name: "Chiang Rai → Luang Prabang (Slow Boat)",
-    posterTitle: "CHIANG RAI – LUANG PRABANG (SLOW BOAT)",
-    tagline: "Van to the border, then two days on a local slow boat",
+    name: "Chiang Rai → Luang Prabang (Local Boat)",
+    posterTitle: "CHIANG RAI – LUANG PRABANG (LOCAL BOAT)",
+    tagline: "Van to the border, then two days on a local boat",
     headline: "Cruise the Mighty Mekong",
-    intro: "Travel by van from Chiang Rai to the Lao border, then board a local slow boat down the Mekong with an overnight stop in Pakbeng before arriving in Luang Prabang.",
+    intro:
+      "Travel by van from Chiang Rai to the Lao border, then board a local boat down the Mekong with an overnight stop in Pakbeng before arriving in Luang Prabang.",
     duration: "2 days · 1 night",
-    durationDetail: "Day 1: van + slow boat to Pakbeng. Day 2: slow boat to Luang Prabang",
+    durationDetail: "Day 1: van + local boat to Pakbeng. Day 2: local boat to Luang Prabang",
     route: "Chiang Rai → Huay Xai → Pakbeng → Luang Prabang",
     routeDetail: "Chiang Rai – Huay Xai – Pakbeng (overnight) – Luang Prabang",
     from: "Chiang Rai",
     to: "Luang Prabang",
-    perfectFor: "Travellers who want the classic two-day Mekong slow boat experience",
+    perfectFor: "Travellers who want the classic two-day Mekong local boat",
     overnightNote:
-      "Overnight in Pakbeng is not included. You arrange your own accommodation in Pakbeng and rejoin the slow boat the next morning.",
+      "Overnight in Pakbeng is not included. You arrange your own accommodation in Pakbeng and rejoin the local boat the next morning.",
     price: "฿1,690 / person",
     meetingPoint: "Chiang Rai — hotel pickup at 5:00 am",
     highlights: [
-      "Van + local slow boat · 2 days · 1 night",
+      "Van + local boat · 2 days · 1 night",
       "Classic Mekong corridor via Pakbeng",
       "Border crossing assistance included",
       `TAT Licence ID ${CONTACT.licence}`,
@@ -200,33 +93,94 @@ export const tours: Tour[] = [
     experiences: [
       { title: "Van Transfer", description: "11-seater van from hotel to the border." },
       { title: "Border Crossing", description: "Shuttle bus across to Lao immigration at Huay Xai." },
-      { title: "Local Slow Boat", description: "Huay Xai to Pakbeng on day 1, Pakbeng to Luang Prabang on day 2." },
+      { title: "Local Boat", description: "Huay Xai to Pakbeng on day 1, Pakbeng to Luang Prabang on day 2." },
       { title: "Mekong Scenery", description: "Jungle hills, riverside villages, and open river views." },
     ],
     itinerary: [
       {
         label: "Day 1",
         detail:
-          "Hotel pickup in Chiang Rai at 5:00 am by 11-seater van. Arrive at the border around 7:00 am. Shuttle bus across to Lao immigration (about 20–30 minutes). Transfer to slow boat pier — local slow boat departs Huay Xai at 9:30 am, arriving Pakbeng around 4:00 pm. Overnight in Pakbeng (arranged by you).",
+          "Hotel pickup in Chiang Rai at 5:00 am by 11-seater van. Arrive at the border around 7:00 am. Shuttle bus across to Lao immigration (about 20–30 minutes). Transfer to the boat pier — the local boat departs Huay Xai at 9:30 am, arriving Pakbeng around 4:00 pm. Overnight in Pakbeng (arranged by you).",
       },
       {
         label: "Day 2",
         detail:
-          "From your hotel to the slow boat pier in Pakbeng. Slow boat departs at 8:30 am, arriving Luang Prabang around 4:00 pm. Trip ends at Luang Prabang slow boat pier.",
+          "From your hotel to the boat pier in Pakbeng. The local boat departs at 8:30 am, arriving Luang Prabang around 4:00 pm. The trip ends at the Luang Prabang boat pier.",
       },
     ],
     includes: [
       "Hotel transfer from Chiang Rai",
       "Border shuttle bus",
-      "Local slow boat ticket (2 days)",
+      "Local boat ticket (2 days)",
       "Friendly local crew",
     ],
     demoDates: ["2026-08-26", "2026-09-05", "2026-09-19"],
-    chartPosition: 5,
+    chartPosition: 2,
     image: "/photos/slowboat-pier.jpg",
-    imageAlt: "Local slow boats moored at the Mekong pier with a Lao flag",
+    imageAlt: "Local boats moored at the Mekong pier with a Lao flag",
     gallery: [
       { src: "/photos/van-11-seater.jpg", alt: "11-seater transfer van at the border station" },
+    ],
+  },
+  {
+    id: "chiang-khong-luang-prabang",
+    name: "Chiang Khong → Luang Prabang (Luxury Boat)",
+    posterTitle: "CHIANG KHONG – LUANG PRABANG (LUXURY BOAT)",
+    tagline: "Two days on a luxury slow boat from the Chiang Khong border",
+    headline: "Cruise the Mighty Mekong",
+    intro:
+      "Hotel pickup in Chiang Khong, then a luxury slow boat down the Mekong. Lunch both days, breakfast on day two, tea and coffee, a riverside village stop, and the Pak Ou Caves. Overnight in Pakbeng, then a minivan to your hotel in Luang Prabang.",
+    duration: "2 days · 1 night",
+    durationDetail: "Day 1: Chiang Khong to Pakbeng. Day 2: Pakbeng to Luang Prabang, with Pak Ou Caves",
+    route: "Chiang Khong → Huay Xai → Pakbeng → Luang Prabang",
+    routeDetail: "Chiang Khong – Huay Xai – Pakbeng (overnight) – Pak Ou Caves – Luang Prabang",
+    from: "Chiang Khong",
+    to: "Luang Prabang",
+    perfectFor: "Travellers starting at the Chiang Khong border who want a guided two-day cruise",
+    overnightNote:
+      "Overnight in Pakbeng is not included. You transfer on your own to a hotel you have booked, then rejoin the boat the next morning.",
+    price: "฿5,700 / person",
+    meetingPoint: "Chiang Khong — hotel pickup at 7:00 am",
+    highlights: [
+      "Luxury slow boat · 2 days · 1 night",
+      "Lunch both days, breakfast on day two, tea and coffee",
+      "Riverside village stop and Pak Ou Caves",
+      `TAT Licence ID ${CONTACT.licence}`,
+    ],
+    experiences: [
+      { title: "Hotel Transfers", description: "Pickup in Chiang Khong and drop-off at your hotel in Luang Prabang." },
+      { title: "Luxury Slow Boat", description: "Huay Xai to Pakbeng on day 1, Pakbeng to Luang Prabang on day 2." },
+      { title: "Onboard Meals", description: "Lunch both days, breakfast on day two, plus tea and coffee." },
+      { title: "Pak Ou Caves", description: "Guided stop at Tham Ting and the Baan Bo craft village." },
+    ],
+    itinerary: [
+      {
+        label: "Day 1",
+        detail:
+          "Private minivan pickup from your Chiang Khong hotel at 7:00 am. Thai immigration at the Chiang Khong checkpoint around 7:20 am, then the Friendship Bridge shuttle to Huay Xai at 7:30 am. Laos visa on arrival about 7:40–8:50 am (about 40 USD, paid by you). Private transfer to the Huay Xai slow boat pier at 9:00 am. The luxury slow boat departs between 9:30 and 10:00 am for Pakbeng, with lunch, tea, and coffee on board and a guided stop at a riverside village. Arrive Pakbeng around 4:00 pm and transfer on your own to your pre-booked hotel.",
+      },
+      {
+        label: "Day 2",
+        detail:
+          "Return to Pakbeng pier at 8:00 am for breakfast on board. Depart between 8:30 and 9:00 am. Buffet lunch, coffee, and tea are served on the way to Luang Prabang, with stops at Baan Bo craft village and the Pak Ou Caves (Tham Ting). Arrive at the Luang Prabang slow boat terminal around 3:30 pm, then a minivan to your hotel.",
+      },
+    ],
+    includes: [
+      "Hotel pickup in Chiang Khong",
+      "Border shuttle and pier transfer",
+      "Luxury slow boat ticket (2 days)",
+      "Lunch both days and breakfast on day two",
+      "Tea and coffee",
+      "Guided village stop and Pak Ou Caves",
+      "Minivan drop-off at your Luang Prabang hotel",
+    ],
+    demoDates: ["2026-08-14", "2026-08-21", "2026-09-04"],
+    chartPosition: 3,
+    image: "/photos/boat-dock.jpg",
+    imageAlt: "Slow boat moored on a Mekong sandbank near Chiang Khong",
+    gallery: [
+      { src: "/photos/fleet.jpg", alt: "Slow boats lined along the riverbank" },
+      { src: "/photos/cabin-lounge.jpg", alt: "Wooden lounge seating inside the slow boat" },
     ],
   },
   {
@@ -281,7 +235,7 @@ export const tours: Tour[] = [
       "Train K11 ticket",
     ],
     demoDates: ["2026-10-03", "2026-10-10", "2026-10-17"],
-    chartPosition: 6,
+    chartPosition: 4,
     image: "/photos/train-k11.jpg",
     imageAlt: "Train K11 at Natuey station platform in Laos",
     gallery: [
@@ -340,7 +294,7 @@ export const tours: Tour[] = [
       "Train K11 ticket",
     ],
     demoDates: ["2026-10-03", "2026-10-10", "2026-10-17"],
-    chartPosition: 7,
+    chartPosition: 5,
     image: "/photos/train-k11.jpg",
     imageAlt: "Train K11 at Natuey station platform in Laos",
     gallery: [
@@ -399,7 +353,7 @@ export const tours: Tour[] = [
       "Train K11 ticket",
     ],
     demoDates: ["2026-10-03", "2026-10-10", "2026-10-17"],
-    chartPosition: 8,
+    chartPosition: 6,
     image: "/photos/train-k11.jpg",
     imageAlt: "Train K11 at Natuey station platform in Laos",
     gallery: [
@@ -408,6 +362,16 @@ export const tours: Tour[] = [
   },
 ];
 
+const RETIRED_TOUR_NAMES: Record<string, string> = {
+  "chiang-mai-luang-prabang": "Chiang Mai → Luang Prabang",
+  "huay-xai-luang-prabang": "Huay Xai → Luang Prabang",
+};
+
 export function getTour(id: string): Tour | undefined {
   return tours.find((t) => t.id === id);
+}
+
+/** Name for a live listing, or a readable label for a route that is no longer sold. */
+export function tourDisplayName(id: string): string {
+  return getTour(id)?.name ?? RETIRED_TOUR_NAMES[id] ?? id;
 }

@@ -34,7 +34,7 @@ export function LandingContent({
   const faqs = [
   {
     q: "What should I bring on the river journey?",
-    a: "Light luggage, sun protection, passport for border checks, and cash for stops en route. The Chiang Mai route includes one overnight.",
+    a: "Light luggage, sun protection, passport for border checks, and cash for stops en route. Boat routes stop overnight in Pakbeng, which you arrange yourself. The Laos visa on arrival is about 40 USD and is paid by you.",
   },
   {
     q: "Are dates flexible?",
@@ -54,7 +54,7 @@ export function LandingContent({
   },
   {
     q: "Where do I meet the boat?",
-    a: "Each tour lists its departure hub — Chiang Mai, Chiang Rai, Chiang Khong, or Huay Xai Village. Boat routes finish in Luang Prabang; the Train K11 routes continue to Vang Vieng or Vientiane.",
+    a: "Chiang Rai routes leave from your hotel. The Chiang Khong luxury boat is picked up in Chiang Khong. Boats finish in Luang Prabang. Train K11 also runs to Vang Vieng and Vientiane.",
   },
 ];
 
@@ -143,7 +143,7 @@ export function LandingContent({
           </h2>
           <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              ["Select route", "Pick your hub — Chiang Mai, Chiang Rai, Chiang Khong, or Huay Xai."],
+              ["Select route", "Luxury or local boat from Chiang Rai, luxury boat from Chiang Khong, or Train K11."],
               [
                 "Choose date",
                 inventoryLive
@@ -258,8 +258,8 @@ export function LandingContent({
             </nav>
           </div>
           <p className="text-sm leading-relaxed text-white/65 sm:col-span-2 lg:col-span-1">
-            Experience the Real Laos — slow boat, van, and train routes from Chiang Mai, Chiang
-            Rai, Chiang Khong, and Huay Xai to Luang Prabang, Vang Vieng, and Vientiane.
+            Experience the Real Laos — slow boat, van, and train routes from Chiang Rai and
+            Chiang Khong to Luang Prabang, Vang Vieng, and Vientiane.
           </p>
         </div>
       </footer>

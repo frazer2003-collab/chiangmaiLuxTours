@@ -112,7 +112,7 @@ body {
 }
 
 /* Mobile river chart — a horizontal waypoint strip above the cards.
-   Eight routes made the old leftover sidebar unreadable (every label truncated). */
+   A leftover sidebar truncates every route label. */
 .mobile-river-chart {
   width: 100%;
 }
