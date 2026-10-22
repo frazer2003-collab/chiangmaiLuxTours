@@ -69,7 +69,7 @@ export const tours: Tour[] = [
     id: "chiang-rai-slowboat-luang-prabang",
     name: "Chiang Rai → Luang Prabang (Local Boat)",
     posterTitle: "CHIANG RAI – LUANG PRABANG (LOCAL BOAT)",
-    tagline: "Van to the border, then two days on a local boat",
+    tagline: "Two days on a local boat via Pakbeng, after the van to the border",
     headline: "Cruise the Mighty Mekong",
     intro:
       "Travel by van from Chiang Rai to the Lao border, then board a local boat down the Mekong with an overnight stop in Pakbeng before arriving in Luang Prabang.",

@@ -15,6 +15,12 @@ import {
 } from "@/lib/tour-display";
 import type { CatalogTour } from "@/lib/tour-catalog";
 
+function cardTitleParts(name: string): { route: string; tier: string | null } {
+  const match = name.match(/^(.*)\s(\([^)]+\))$/);
+  if (!match) return { route: name, tier: null };
+  return { route: match[1], tier: match[2] };
+}
+
 export function RiverRoutesSection({
   tours,
   inventoryLive,
@@ -216,6 +222,7 @@ export function RiverRoutesSection({
             >
               {tours.map((tour) => {
                 const isSelected = tour.id === selectedId;
+                const title = cardTitleParts(tour.name);
                 return (
                   <article
                     key={tour.id}
@@ -250,25 +257,28 @@ export function RiverRoutesSection({
                       <div className="flex flex-1 flex-col p-4 sm:p-5">
                         <TourTierBadge tourId={tour.id} />
                         <h3 className="mt-2 text-lg font-semibold leading-snug text-[var(--ink)]">
-                          {tour.name}
+                          <span className="block min-h-[1.6em]">{title.route}</span>
+                          {title.tier ? <span className="block">{title.tier}</span> : null}
                         </h3>
-                        <p className="mt-1 text-sm leading-relaxed text-[var(--ink-muted)]">
+                        <p className="mt-1 min-h-[2.85rem] text-sm leading-relaxed text-[var(--ink-muted)]">
                           {tour.tagline}
                         </p>
-                        <p className="mt-3 text-xs font-medium uppercase tracking-[0.14em] text-[var(--river-blue)]">
-                          {tour.duration}
-                        </p>
-                        <p className="mt-2 text-base font-semibold text-[var(--ink)]">
-                          {tour.price}
-                        </p>
-                        <BookTourButton
-                          tourId={tour.id}
-                          tourName={tour.name}
-                          bookable={isTourBookableOnline(tour, inventoryLive)}
-                          className={`mt-5 ${btnBookRoute}`}
-                        >
-                          {getBookRouteLabel(tour, inventoryLive)}
-                        </BookTourButton>
+                        <div className="mt-auto flex flex-col pt-4">
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--river-blue)]">
+                            {tour.duration}
+                          </p>
+                          <p className="mt-2 text-base font-semibold text-[var(--ink)]">
+                            {tour.price}
+                          </p>
+                          <BookTourButton
+                            tourId={tour.id}
+                            tourName={tour.name}
+                            bookable={isTourBookableOnline(tour, inventoryLive)}
+                            className={`mt-5 ${btnBookRoute}`}
+                          >
+                            {getBookRouteLabel(tour, inventoryLive)}
+                          </BookTourButton>
+                        </div>
                       </div>
                     </div>
                   </article>
