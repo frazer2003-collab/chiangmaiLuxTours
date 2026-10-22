@@ -82,7 +82,7 @@ export function LandingContent({
       </header>
 
       <main id="main">
-      <section className="relative overflow-hidden bg-[var(--river-navy)] text-white">
+      <section className="relative isolate overflow-hidden bg-[var(--river-navy)] text-white sm:min-h-[42rem]">
         <div className="absolute inset-0">
           <RoutePhoto
             src="/photos/hero.png"
@@ -90,13 +90,12 @@ export function LandingContent({
             className="h-full w-full"
             sizes="100vw"
             priority
-            objectPosition="center 42%"
+            objectPosition="62% 72%"
           />
           <div
-            className="absolute inset-0 bg-gradient-to-r from-[var(--river-navy)]/90 via-[var(--river-navy)]/68 to-[var(--river-navy)]/28"
+            className="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--river-navy)_86%,transparent),color-mix(in_srgb,var(--river-navy)_42%,transparent)_62%,transparent)] sm:bg-[linear-gradient(105deg,color-mix(in_srgb,var(--river-navy)_94%,transparent)_0%,color-mix(in_srgb,var(--river-navy)_80%,transparent)_34%,color-mix(in_srgb,var(--river-navy)_24%,transparent)_56%,transparent_74%)]"
             aria-hidden
           />
-          <div className="chart-grid absolute inset-0 opacity-[0.08]" aria-hidden />
         </div>
         <svg
           className="absolute bottom-0 left-0 w-full text-[var(--chart-paper)]"
@@ -109,12 +108,12 @@ export function LandingContent({
             d="M0,80 C240,20 480,100 720,60 C960,20 1200,90 1440,40 L1440,120 L0,120 Z"
           />
         </svg>
-        <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-12 sm:px-6 sm:pb-24 sm:pt-16">
-          <div className="max-w-2xl">
-            <h1 className="font-[family-name:var(--font-chart)] text-[clamp(2rem,6vw,3.25rem)] leading-[1.05] tracking-[-0.03em] text-balance">
+        <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-5 sm:flex sm:min-h-[42rem] sm:items-center sm:px-6 sm:pb-28 sm:pt-16">
+          <div className="max-w-xl">
+            <h1 className="font-[family-name:var(--font-chart)] text-[2rem] leading-[1.05] tracking-[-0.03em] text-balance sm:text-[clamp(2.35rem,6vw,3.25rem)]">
               Cruise the Mighty Mekong
             </h1>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-white/88 sm:text-lg">
+            <p className="mt-4 hidden max-w-xl text-base leading-relaxed text-white/88 sm:block sm:text-lg">
               {SHARED_TOUR_INTRO}
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">

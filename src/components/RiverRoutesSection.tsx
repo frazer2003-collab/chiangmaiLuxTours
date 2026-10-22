@@ -5,11 +5,9 @@ import { BookTourButton } from "@/components/booking/BookTourButton";
 import { TourDetailPanel } from "@/components/TourDetailPanel";
 import { TourTierBadge } from "@/components/TourTierBadge";
 import { RoutePhoto } from "@/components/RoutePhoto";
-import { IconChevron } from "@/components/icons";
 import { btnBookRoute } from "@/lib/guest-ui";
 import {
   chartDotLabel,
-  destinationCode,
   getBookRouteLabel,
   isTourBookableOnline,
 } from "@/lib/tour-display";
@@ -31,7 +29,6 @@ export function RiverRoutesSection({
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
   const [selectedId, setSelectedId] = useState(tours[0]?.id ?? "");
-  const [hasScrolled, setHasScrolled] = useState(false);
 
   const scrollToTour = useCallback((tourId: string) => {
     const card = cardRefs.current.get(tourId);
@@ -68,33 +65,20 @@ export function RiverRoutesSection({
     return () => observer.disconnect();
   }, [tours]);
 
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    const onScroll = () => {
-      if (container.scrollLeft > 8) setHasScrolled(true);
-    };
-
-    container.addEventListener("scroll", onScroll, { passive: true });
-    return () => container.removeEventListener("scroll", onScroll);
-  }, []);
-
   const selectedTour = tours.find((t) => t.id === selectedId) ?? tours[0];
-  const destination = selectedTour?.to ?? "Luang Prabang";
 
   return (
     <section
       id="tours"
-      className={`relative border-b border-[var(--river-blue)]/10 bg-[var(--chart-paper)] py-12 sm:py-16 scroll-mt-[4.75rem]`}
+      className={`relative border-b border-[var(--river-blue)]/10 bg-[var(--chart-paper)] py-5 sm:py-16 scroll-mt-[4.75rem]`}
     >
       <div className="chart-grid absolute inset-0 opacity-[0.35]" aria-hidden />
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mb-8 max-w-2xl">
-          <h2 className="font-[family-name:var(--font-chart)] text-3xl tracking-[-0.02em] text-[var(--ink)] sm:text-4xl">
+        <div className="mb-2 max-w-2xl sm:mb-8">
+          <h2 className="font-[family-name:var(--font-chart)] text-2xl tracking-[-0.02em] text-[var(--ink)] sm:text-4xl">
             River routes
           </h2>
-          <p className="mt-3 text-base leading-relaxed text-[var(--ink-muted)]">
+          <p className="mt-3 hidden text-base leading-relaxed text-[var(--ink-muted)] sm:block">
             Six routes into Laos — by slow boat, van, or train, ending in Luang Prabang,
             Vang Vieng, or Vientiane.
           </p>
@@ -121,12 +105,14 @@ export function RiverRoutesSection({
                       setSelectedId(tour.id);
                       scrollToTour(tour.id);
                     }}
-                    className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-[var(--chart-paper)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
+                    className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-[var(--chart-paper)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)] ${
+                      isSelected ? "h-5 w-5" : "h-4 w-4"
+                    }`}
                     style={{
                       left,
                       backgroundColor: isSelected
                         ? "var(--marker-yellow)"
-                        : "color-mix(in srgb, var(--river-blue) 35%, white)",
+                        : "color-mix(in srgb, var(--river-blue) 62%, white)",
                     }}
                   />
                 );
@@ -162,63 +148,56 @@ export function RiverRoutesSection({
           ) : null}
         </div>
 
-        <div>
-          <nav
-            className="mobile-river-chart mb-4 md:hidden"
-            aria-label="River route chart"
-          >
-            <div className="mobile-river-chart__track">
-              {tours.map((tour, index) => {
-                const isSelected = tour.id === selectedId;
-                return (
-                  <div key={tour.id} className="mobile-river-chart__leg">
-                    {index > 0 ? (
-                      <div className="mobile-river-chart__line" aria-hidden />
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => scrollToTour(tour.id)}
-                      aria-pressed={isSelected}
-                      aria-label={`Route ${tour.chartPosition}: ${tour.name}`}
-                      className="pressable flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
-                    >
-                      <span
-                        className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${
-                          isSelected
-                            ? "bg-[var(--marker-yellow)] text-[var(--ink)] ring-4 ring-[var(--marker-yellow)]/35"
-                            : "border-2 border-[var(--river-blue)]/25 bg-white text-[var(--river-blue)]"
-                        }`}
-                        aria-hidden
-                      >
-                        {tour.chartPosition}
-                      </span>
-                    </button>
+        <ul className="space-y-1 md:hidden" aria-label="All routes">
+          {tours.map((tour) => {
+            const isSelected = tour.id === selectedId;
+            const title = cardTitleParts(tour.name);
+            return (
+              <li key={tour.id}>
+                <article
+                  onClick={() => setSelectedId(tour.id)}
+                  className={`flex cursor-pointer items-center gap-3 rounded-2xl bg-white p-2 pr-3 shadow-[0_14px_30px_-18px_rgba(15,39,64,0.45)] ${
+                    isSelected
+                      ? "ring-2 ring-[var(--marker-yellow)]"
+                      : "ring-1 ring-[var(--river-blue)]/15"
+                  }`}
+                >
+                  <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-xl">
+                    <RoutePhoto
+                      src={tour.image}
+                      alt=""
+                      className="h-full w-full"
+                      sizes="76px"
+                    />
+                    <span className="absolute left-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--marker-yellow)] text-[10px] font-bold text-[var(--ink)]">
+                      {tour.chartPosition}
+                    </span>
                   </div>
-                );
-              })}
-              <div className="mobile-river-chart__destination" aria-hidden>
-                <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[var(--river-blue)]/30 bg-[var(--river-navy)] text-xs font-bold text-[var(--marker-yellow)]">
-                  {destinationCode(destination)}
-                </span>
-                <span className="pr-1 text-xs font-semibold leading-tight text-[var(--ink-muted)]">
-                  {destination}
-                </span>
-              </div>
-            </div>
-            {selectedTour ? (
-              <p
-                className="mt-2 text-sm font-medium text-[var(--river-blue)]"
-                aria-live="polite"
-              >
-                Route {selectedTour.chartPosition} of {tours.length} · {selectedTour.name}
-              </p>
-            ) : null}
-          </nav>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold leading-snug text-[var(--ink)]">{title.route}</h3>
+                    <p className="mt-0.5 text-xs leading-snug text-[var(--ink-muted)]">
+                      {title.tier ? `${title.tier.replace(/[()]/g, "")} · ` : ""}
+                      <span className="font-semibold text-[var(--ink)]">{tour.price}</span>
+                    </p>
+                  </div>
+                  <BookTourButton
+                    tourId={tour.id}
+                    tourName={tour.name}
+                    bookable={isTourBookableOnline(tour, inventoryLive)}
+                    className="pressable inline-flex min-h-11 shrink-0 items-center rounded-full bg-[var(--marker-yellow)] px-3 text-sm font-semibold text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--river-blue)]"
+                  >
+                    Book
+                  </BookTourButton>
+                </article>
+              </li>
+            );
+          })}
+        </ul>
 
-          <div className="min-w-0">
+        <div className="hidden min-w-0 md:block">
             <div
               ref={scrollRef}
-              className="river-routes-carousel flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:pb-0 xl:grid-cols-3 [&::-webkit-scrollbar]:hidden"
+              className="grid grid-cols-2 gap-6 xl:grid-cols-3"
             >
               {tours.map((tour) => {
                 const isSelected = tour.id === selectedId;
@@ -234,12 +213,12 @@ export function RiverRoutesSection({
                     data-tour-card
                     data-tour-id={tour.id}
                     onClick={() => setSelectedId(tour.id)}
-                    className="w-[min(85vw,20rem)] shrink-0 cursor-pointer snap-start md:w-auto"
+                    className="cursor-pointer"
                   >
                     <div
-                      className={`flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-[0_14px_40px_-22px_rgba(27,61,92,0.45)] transition ${
+                      className={`flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-[0_22px_44px_-18px_rgba(15,39,64,0.55)] transition ${
                         isSelected
-                          ? "border-[var(--marker-yellow)] ring-2 ring-[var(--marker-yellow)]/45"
+                          ? "border-[var(--marker-yellow)] ring-2 ring-[var(--marker-yellow)]/70"
                           : "border-[var(--river-blue)]/18"
                       }`}
                     >
@@ -250,7 +229,7 @@ export function RiverRoutesSection({
                           className="h-full w-full"
                           sizes="(min-width: 1280px) 22vw, (min-width: 768px) 44vw, 78vw"
                         />
-                        <span className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--marker-yellow)] text-xs font-bold text-[var(--ink)] shadow-[0_6px_16px_-8px_rgba(15,39,64,0.55)]">
+                        <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--marker-yellow)] text-sm font-bold text-[var(--ink)] shadow-[0_8px_18px_-6px_rgba(15,39,64,0.65)]">
                           {tour.chartPosition}
                         </span>
                       </div>
@@ -284,21 +263,7 @@ export function RiverRoutesSection({
                   </article>
                 );
               })}
-              <div
-                className="w-4 shrink-0 snap-none md:hidden"
-                aria-hidden
-              />
             </div>
-
-            {!hasScrolled && tours.length > 1 && (
-              <p
-                className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[var(--ink-muted)] md:hidden"
-              >
-                {tours.length} routes — swipe to compare
-                <IconChevron className="h-3.5 w-3.5 rotate-[-90deg]" />
-              </p>
-            )}
-          </div>
         </div>
 
         {selectedTour ? (
